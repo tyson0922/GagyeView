@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Sensitive data ###
-credentials/api-keys.properties
+credentials/
