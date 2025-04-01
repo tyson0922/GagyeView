@@ -1,14 +1,4 @@
 
-/* Use Noto Sans KR as your main font */
-/*body {*/
-/*    */
-/*}*/
-
-/* (Optional) Adjust SweetAlert toast styling if needed */
-/* .swal2-toast .swal2-title { */
-/*   font-size: 1.2rem; */
-
-/* } */
 .swal2-toast .swal2-title,
 .swal2-toast .swal2-html-container {
     font-family: "Jua", "Noto Sans KR", sans-serif;
