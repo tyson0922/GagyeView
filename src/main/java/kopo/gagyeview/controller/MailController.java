@@ -1,8 +1,8 @@
 package kopo.gagyeview.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import kopo.gagyeview.dto.sql.MailDTO;
-import kopo.gagyeview.dto.sql.SweetAlertMsgDTO;
+import kopo.gagyeview.dto.MailDTO;
+import kopo.gagyeview.dto.SweetAlertMsgDTO;
 import kopo.gagyeview.service.IMailService;
 import kopo.gagyeview.util.CmmUtil;
 import lombok.RequiredArgsConstructor;
@@ -44,13 +44,12 @@ public class MailController {
         String mailTitle = CmmUtil.nvl(request.getParameter("title"));
         String mailContent = CmmUtil.nvl(request.getParameter("content"));
 
-        // 메일 발송할 정보 넣기 위한 DTO 객체 생성하기
-        MailDTO pDTO = new MailDTO();
-
-        // 웹에서 받은 값을 DTO에 넣기
-        pDTO.setToMail(toMail);
-        pDTO.setTitle(mailTitle);
-        pDTO.setText(mailContent);
+        // 메일 발송할 정보 넣기 위한 DTO 객체 생성하고  웹에서 받은 값을 DTO에 넣기
+        MailDTO pDTO = MailDTO.builder()
+                .toMail(toMail)
+                .title(mailTitle)
+                .text(mailContent)
+                .build();
 
         int res = mailService.sendMail(pDTO);
 
@@ -67,11 +66,13 @@ public class MailController {
         }
         log.info("icon: {}, alertTitle: {}, alertContent: {}", icon, alertTitle, alertContent);
 
-        SweetAlertMsgDTO rDTO = new SweetAlertMsgDTO();
-        rDTO.setIcon(icon);
-        rDTO.setTitle(alertTitle);
-        rDTO.setText(alertContent);
-        rDTO.setResult(res);
+        SweetAlertMsgDTO rDTO = SweetAlertMsgDTO.builder()
+                .result(res)
+                .icon(icon)
+                .title(alertTitle)
+                .text(alertContent)
+                .build();
+
 
         log.info("{}.sendMail End!", this.getClass().getName());
 

@@ -1,6 +1,6 @@
 package kopo.gagyeview.service;
 
-import kopo.gagyeview.dto.sql.MailDTO;
+import kopo.gagyeview.dto.MailDTO;
 
 public interface IMailService {
 

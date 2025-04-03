@@ -1,7 +1,7 @@
 package kopo.gagyeview.service.impl;
 
 import jakarta.mail.internet.MimeMessage;
-import kopo.gagyeview.dto.sql.MailDTO;
+import kopo.gagyeview.dto.MailDTO;
 import kopo.gagyeview.service.IMailService;
 import kopo.gagyeview.util.CmmUtil;
 import lombok.RequiredArgsConstructor;
@@ -32,12 +32,12 @@ public class MailService implements IMailService {
 
         // DTO 객체가 메모리에 올라가지 않아  Null이 발생할 수 있기 때문에 if문 사용해서 에러 방지
         if (pDTO == null){
-            pDTO = new MailDTO();
+            pDTO = MailDTO.builder().build();
         }
 
-        String toMail = CmmUtil.nvl(pDTO.getToMail()); // 받는 사람
-        String title = CmmUtil.nvl(pDTO.getTitle()); // 메일 제목
-        String contents = CmmUtil.nvl(pDTO.getText()); // 메일 내용
+        String toMail = CmmUtil.nvl(pDTO.toMail()); // 받는 사람
+        String title = CmmUtil.nvl(pDTO.title()); // 메일 제목
+        String contents = CmmUtil.nvl(pDTO.text()); // 메일 내용
 
         log.info("toMail: {}, title: {}, text: {}", toMail, title, contents);
 
