@@ -1,8 +1,9 @@
 package kopo.gagyeview.service.impl;
 
+import kopo.gagyeview.dto.ExistsYnDTO;
 import kopo.gagyeview.dto.MailDTO;
 import kopo.gagyeview.dto.UserInfoDTO;
-import kopo.gagyeview.persistance.mapper.IUserInfoMapper;
+import kopo.gagyeview.persistence.mapper.IUserInfoMapper;
 import kopo.gagyeview.service.IMailService;
 import kopo.gagyeview.service.IUserInfoService;
 import kopo.gagyeview.util.CmmUtil;
@@ -24,11 +25,18 @@ public class UserInfoService implements IUserInfoService {
     private final IMailService mailService; // 메일 발송을 위한 MailService 자바 객체 가져오기
 
     @Override
-    public UserInfoDTO getUserIdExists(UserInfoDTO pDTO) throws Exception {
+    public ExistsYnDTO getUserIdExists(UserInfoDTO pDTO) throws Exception {
         log.info("{}.getUserIdExists Start!", this.getClass().getName());
 
         // DB 아이디가 존재하는지 SQL 쿼리 실행
-        UserInfoDTO rDTO = userInfoMapper.getUserIdExists(pDTO);
+        ExistsYnDTO rDTO = userInfoMapper.getUserIdExists(pDTO);
+
+//        Map<String, Object> rMap = userInfoMapper.getUserIdExists(pDTO);
+//        UserInfoDTO rDTO = UserInfoDTO.builder()
+//                .existsYn(CmmUtil.nvl((String) rMap.get("EXISTS_YN")))
+//                .build();
+
+//        UserInfoDTO rDTO = userInfoMapper.getUserIdExists(pDTO);
 
         log.info("{}.getUserIdExists End!", this.getClass().getName());
 
@@ -36,11 +44,11 @@ public class UserInfoService implements IUserInfoService {
     }
 
     @Override
-    public UserInfoDTO getUserEmailExists(UserInfoDTO pDTO) throws Exception {
+    public ExistsYnDTO getUserEmailExists(UserInfoDTO pDTO) throws Exception {
 
         log.info("{}.getUserEmailExists Start!", this.getClass().getName());
 
-        UserInfoDTO rDTO = Optional.ofNullable(userInfoMapper.getEmailExists(pDTO)).orElse(UserInfoDTO.builder().build());
+        ExistsYnDTO rDTO = Optional.ofNullable(userInfoMapper.getEmailExists(pDTO)).orElse(ExistsYnDTO.builder().build());
 
         log.info("rDTO: {}", rDTO);
 

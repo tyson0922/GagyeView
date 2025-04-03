@@ -16,4 +16,23 @@ public record SweetAlertMsgDTO (
         String text // sweet alert text
 
 ){
+
+    public static SweetAlertMsgDTO success(String title, String text){
+        return SweetAlertMsgDTO.builder()
+                .result(1)
+                .icon("success")
+                .title(title)
+                .text(text)
+                .build();
+    }
+
+    public static SweetAlertMsgDTO fail(String title, String text){
+        return SweetAlertMsgDTO.builder()
+                .result(0)
+                .icon("error")
+                .title(title)
+                .text(text)
+                .build();
+    }
+
 }

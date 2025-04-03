@@ -2,20 +2,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <!--JAVA와 연결할 Mapper 파일 설정-->
-<mapper namespace="kopo.poly.mapper.IUserInfoMapper">
+<mapper namespace="kopo.gagyeview.persistence.mapper.IUserInfoMapper">
 
     <!--    회원가입 전 아이디 중복체크하기-->
-    <select id="getUserIdExists" parameterType="UserInfoDTO" resultType="UserInfoDTO">
+    <select id="getUserIdExists" parameterType="UserInfoDTO" resultType="ExistsYnDTO">
         SELECT IF(COUNT(USER_ID) > 0, 'Y', 'N') AS EXISTS_YN
         FROM USER_INFO
-        WHERE USER_ID = #{user_id}
+        WHERE USER_ID = #{userId}
     </select>
 
     <!--    회원 가입 전 이메일 중복체크하기-->
-    <select id="getEmailExists" parameterType="UserInfoDTO" resultType="UserInfoDTO">
+    <select id="getEmailExists" parameterType="UserInfoDTO" resultType="ExistsYnDTO">
         SELECT IF(COUNT(USER_ID) > 0, 'Y', 'N') AS EXISTS_YN
         FROM USER_INFO
-        WHERE USER_EMAIL = #{email}
+        WHERE USER_EMAIL = #{userEmail}
     </select>
 
     <!--    회원정보 등록하기(회원가입하기)-->
@@ -31,8 +31,8 @@
          CHG_DT)
         VALUES (#{userId},
                 #{userName},
+                #{userEmail},
                 #{userPw},
-                #{email},
                 #{userId},
                 NOW(),
                 #{userId},
