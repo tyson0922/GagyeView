@@ -31,13 +31,6 @@ public class UserInfoService implements IUserInfoService {
         // DB 아이디가 존재하는지 SQL 쿼리 실행
         ExistsYnDTO rDTO = userInfoMapper.getUserIdExists(pDTO);
 
-//        Map<String, Object> rMap = userInfoMapper.getUserIdExists(pDTO);
-//        UserInfoDTO rDTO = UserInfoDTO.builder()
-//                .existsYn(CmmUtil.nvl((String) rMap.get("EXISTS_YN")))
-//                .build();
-
-//        UserInfoDTO rDTO = userInfoMapper.getUserIdExists(pDTO);
-
         log.info("{}.getUserIdExists End!", this.getClass().getName());
 
         return rDTO;
