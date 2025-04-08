@@ -1,12 +1,12 @@
 /* ===== Buttons Css ===== */
 .primary-btn {
-    background: var(--primary);
-    color: var(--white);
+    background: var(--white);
+    color: var(--success);
     box-shadow: var(--shadow-2);
 }
 .active.primary-btn, .primary-btn:hover, .primary-btn:focus {
-    background: var(--primary-dark);
-    color: var(--white);
+    background: var(--success-dark);
+    color: var(--success);
     box-shadow: var(--shadow-4);
 }
 .deactive.primary-btn {
@@ -16,12 +16,12 @@
 }
 
 .primary-btn-outline {
-    border-color: var(--primary);
-    color: var(--primary);
+    border-color: var(--white);
+    color: var(--white);
 }
 .active.primary-btn-outline, .primary-btn-outline:hover, .primary-btn-outline:focus {
-    background: var(--primary-dark);
-    color: var(--white);
+    background: var(--success-dark);
+    color: var(--success);
 }
 .deactive.primary-btn-outline {
     color: var(--dark-3);
@@ -56,7 +56,7 @@
 .navbar-one .navbar .navbar-toggler .toggler-icon {
     width: 30px;
     height: 2px;
-    background-color: var(--primary);
+    background-color: var(--success);
     margin: 5px 0;
     display: block;
     position: relative;
@@ -91,7 +91,7 @@
         top: 140%;
         left: 0;
         width: 100%;
-        background-color: var(--primary);
+        background-color: var(--white);
         z-index: 8;
         padding: 10px 0;
         border-radius: 0 0 5px 5px;
@@ -106,7 +106,7 @@
     line-height: 24px;
     font-weight: 600;
     padding: 28px 15px;
-    color: var(--primary);
+    color: var(--success);
     text-transform: capitalize;
     position: relative;
     display: flex;
@@ -125,7 +125,7 @@
     bottom: 0;
     height: 100%;
     width: 0%;
-    background-color: var(--white);
+    background-color: var(--success);
     opacity: 0;
     visibility: hidden;
     z-index: -1;
@@ -172,7 +172,7 @@
     left: 0;
     top: 100%;
     width: 260px;
-    background-color: var(--white);
+    background-color: var(--success);
     box-shadow: var(--shadow-4);
     border-radius: 5px;
     opacity: 0;
@@ -251,19 +251,19 @@
     border-radius: 5px;
 }
 .navbar-one .navbar .navbar-nav .nav-item .sub-menu li a:hover {
-    background-color: var(--primary);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--success);
 }
 .navbar-one .navbar .navbar-nav .nav-item .sub-menu li a::before {
     display: none;
 }
 @media only screen and (min-width: 768px) and (max-width: 991px), (max-width: 767px) {
     .navbar-one .navbar .navbar-nav .nav-item .sub-menu li a:hover {
-        background-color: var(--primary-dark);
-        color: var(--white);
+        background-color: var(--success-dark);
+        color: var(--success);
     }
     .navbar-one .navbar .navbar-nav .nav-item .sub-menu li a i {
-        color: var(--primary-dark);
+        color: var(--success-dark);
         -webkit-transition: all 0.3s ease-out 0s;
         -moz-transition: all 0.3s ease-out 0s;
         -ms-transition: all 0.3s ease-out 0s;
@@ -271,7 +271,7 @@
         transition: all 0.3s ease-out 0s;
     }
     .navbar-one .navbar .navbar-nav .nav-item .sub-menu li a:hover i {
-        color: var(--white);
+        color: var(--success);
     }
 }
 .navbar-one .navbar .navbar-nav .nav-item .sub-menu li a i {
@@ -336,7 +336,7 @@
         font-size: 16px;
         background: none;
         border: 0;
-        color: var(--white);
+        color: var(--success);
     }
 }
 @media only screen and (min-width: 768px) and (max-width: 991px) {
@@ -366,27 +366,29 @@
     letter-spacing: 0;
 }
 .navbar-one .navbar .navbar-btn ul li a.primary-btn-outline {
-    border-color: var(--primary);
-    color: var(--primary);
+    border-color: var(--success);
+    color: var(--success);
+    border-radius: 50px;
 }
 .navbar-one .navbar .navbar-btn ul li a.primary-btn-outline:hover {
-    background-color: var(--primary);
+    background-color: var(--success);
     color: var(--white);
 }
 .navbar-one .navbar .navbar-btn ul li a.primary-btn {
-    background-color: var(--primary);
+    background-color: var(--success);
     color: var(--white);
-    border-color: var(--primary);
+    border-color: var(--success);
+    border-radius: 50px;
 }
 .navbar-one .navbar .navbar-btn ul li a.primary-btn:hover {
     background-color: transparent;
-    color: var(--primary);
+    color: var(--success);
 }
 
 .navbar-logo-text {
     font-size: 28px; /* or 32px if you want it even bigger */
     font-weight: 700;
-    color: var(--primary);
+    color: var(--success);
     text-transform: none;
     letter-spacing: -0.5px;
     font-family: var(--font-family); /* so it matches the rest */
