@@ -1,17 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <!--====== Bootstrap CSS ======-->
-    <link rel="stylesheet" href="/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css"/>
     <!--====== Lineicons CSS as we are using this for icons ======-->
-    <link rel="stylesheet" href="/css/lineicons.css"/>
+    <!--    <link rel="stylesheet" href="/css/bootstrap/lineicons.css"/>-->
+    <link rel="stylesheet" href="https://cdn.lineicons.com/5.0/lineicons.css" />
+
     <!--====== Starter Style CSS to make components works ======-->
-    <link rel="stylesheet" href="/css/starter.css"/>
+    <link rel="stylesheet" href="/css/bootstrap/starter.css"/>
     <!--    appbar css-->
-    <link rel="stylesheet" href="/css/appbar.css"/>
+    <link rel="stylesheet" href="/css/components/appbar.css"/>
     <!--    main section css-->
-    <link rel="stylesheet" href="/css/main-section.css"/>
+    <link rel="stylesheet" href="/css/components/main-section.css"/>
+
+    <!--====== Bootstrap js ======-->
+<!--    <script type="text/javascript" src="/js/bootstrap/bootstrap.bundle.min.js"></script>-->
+    <!-- Bootstrap Bundle JS (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" src="/js/components/appbar.js"></script>
 
     <title>가계뷰</title>
 </head>
@@ -21,10 +30,13 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <nav class="navbar navbar-expand-lg">
+                <nav class="navbar navbar-expand-lg align-items-center justify-content-between">
+                    <!-- Logo (fixed width) -->
                     <a class="navbar-brand" href="javascript:void(0)">
                         <h1 class="navbar-logo-text">가계뷰</h1>
                     </a>
+
+                    <!-- Hamburger Toggle -->
                     <button
                             class="navbar-toggler"
                             type="button"
@@ -38,88 +50,60 @@
                         <span class="toggler-icon"></span>
                         <span class="toggler-icon"></span>
                     </button>
-                    <div class="collapse navbar-collapse sub-menu-bar" id="navbarOne">
-                        <ul class="navbar-nav m-auto">
+
+                    <!-- Centered Menu -->
+                    <div class="collapse navbar-collapse justify-content-center" id="navbarOne">
+                        <ul class="navbar-nav">
                             <li class="nav-item">
-                                <a
-                                        class="page-scroll active"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#sub-nav1"
-                                        aria-controls="sub-nav1"
-                                        aria-expanded="false"
-                                        aria-label="Toggle navigation"
-                                        href="javascript:void(0)"
-                                >
-                                    About
-                                    <div class="sub-nav-toggler">
-                                        <span><i class="lni lni-chevron-down"></i></span>
-                                    </div>
-                                </a>
-                                <ul class="sub-menu collapse" id="sub-nav1">
-                                    <li><a href="javascript:void(0)">About Us</a></li>
-                                    <li>
-                                        <a
-                                                class="page-scroll"
-                                                data-bs-toggle="collapse"
-                                                data-bs-target="#sub-nav2"
-                                                aria-controls="sub-nav2"
-                                                aria-expanded="false"
-                                                aria-label="Toggle navigation"
-                                                href="javascript:void(0)"
-                                        >
-                                            Our Portfolio
-                                            <div class="sub-nav-toggler">
-                                                <span><i class="lni lni-chevron-down"></i></span>
-                                            </div>
-                                        </a>
-                                        <ul class="sub-menu collapse" id="sub-nav2">
-                                            <li>
-                                                <a href="javascript:void(0)">Portfolio Style 1</a>
-                                            </li>
-                                            <li>
-                                                <a href="javascript:void(0)">Portfolio Style 2</a>
-                                            </li>
-                                            <li>
-                                                <a href="javascript:void(0)">Portfolio Style 3</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li><a href="javascript:void(0)">Our Teams</a></li>
-                                </ul>
+                                <a href="javascript:void(0)">자료 분석</a>
                             </li>
                             <li class="nav-item">
-                                <a href="javascript:void(0)">Services</a>
+                                <a href="javascript:void(0)">영수증 등록</a>
                             </li>
                             <li class="nav-item">
-                                <a href="javascript:void(0)">Resources</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="javascript:void(0)">Support</a>
+                                <a href="javascript:void(0)">마트 안내</a>
                             </li>
                         </ul>
                     </div>
-                    <div class="navbar-btn d-none d-sm-inline-block">
-                        <ul>
-                            <li>
-                                <a class="btn primary-btn-outline" href="javascript:void(0)"
-                                >Sign In</a
-                                >
+
+                    <!-- Login/Signup (fixed width) -->
+                    <div class="navbar-btn d-none d-sm-block">
+                        <ul class="d-flex justify-content-end align-items-center">
+
+                            <!-- Logged in -->
+                            <li th:if="${session.SS_USER_ID != null}">
+                                <i class="lni lni-user-4" style="font-size: 40px; color: var(--success)"></i>
                             </li>
-                            <li>
-                                <a class="btn primary-btn" href="javascript:void(0)"
-                                >Sign Up</a
-                                >
+                            <li class="nav-item dropdown" th:if="${session.SS_USER_ID != null}">
+                                <a class="btn primary-btn dropdown-toggle"
+                                   href="#"
+                                   role="button"
+                                   id="userDropdown"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+                                    <span th:text="${session.SS_USER_NAME} + '님'"></span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="/user/myPage" style="color: var(--success)">마이페이지</a></li>
+                                    <li><a class="dropdown-item" href="/user/logout" style="color: var(--error)">로그아웃</a></li>
+                                </ul>
+                            </li>
+
+                            <!-- Not logged in -->
+                            <li th:unless="${session.SS_USER_ID != null}">
+                                <a class="btn primary-btn-outline" href="/user/loginForm">로그인</a>
+                            </li>
+                            <li th:unless="${session.SS_USER_ID != null}">
+                                <a class="btn primary-btn" href="/user/userRegForm">회원가입</a>
                             </li>
                         </ul>
                     </div>
                 </nav>
-                <!-- navbar -->
             </div>
         </div>
-        <!-- row -->
     </div>
-    <!-- container -->
 </section>
+
 <!--====== NAVBAR ONE PART ENDS ======-->
 <section class="main-section">
     <div class="container">
@@ -128,17 +112,17 @@
     </div>
 
 </section>
-<!--====== Bootstrap js ======-->
-<script type="text/javascript" src="/js/bootstrap/bootstrap.bundle.min.js"></script>
 
 <script>
-    //===== close navbar-collapse when a  clicked
-    let navbarTogglerOne = document.querySelector(
-        ".navbar-one .navbar-toggler"
-    );
-    navbarTogglerOne.addEventListener("click", function () {
-        navbarTogglerOne.classList.toggle("active");
-    });
+    // document.addEventListener("DOMContentLoaded", function () {
+    //     const dropdownTrigger = document.querySelector('#userDropdown');
+    //     if (dropdownTrigger) {
+    //         const dropdownInstance = new bootstrap.Dropdown(dropdownTrigger);
+    //         console.log('Dropdown manually initialized:', dropdownInstance);
+    //     } else {
+    //         console.warn('#userDropdown not found!');
+    //     }
+    // });
 </script>
 
 </body>

@@ -1,0 +1,389 @@
+/* ===== Buttons Css ===== */
+.primary-btn {
+    background: var(--white);
+    color: var(--success);
+    box-shadow: var(--shadow-2);
+}
+.active.primary-btn, .primary-btn:hover, .primary-btn:focus {
+    background: var(--success-dark);
+    color: var(--success);
+    box-shadow: var(--shadow-4);
+}
+.deactive.primary-btn {
+    background: var(--gray-4);
+    color: var(--dark-3);
+    pointer-events: none;
+}
+
+.primary-btn-outline {
+    border-color: var(--white);
+    color: var(--white);
+}
+.active.primary-btn-outline, .primary-btn-outline:hover, .primary-btn-outline:focus {
+    background: var(--success-dark);
+    color: var(--success);
+}
+.deactive.primary-btn-outline {
+    color: var(--dark-3);
+    border-color: var(--gray-4);
+    pointer-events: none;
+}
+
+/*===========================
+  NAVBAR css
+===========================*/
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+.mb-100 {
+    margin-bottom: 100px;
+}
+
+/*===== NAVBAR ONE =====*/
+.navbar-one {
+    background: var(--white);
+}
+@media only screen and (min-width: 768px) and (max-width: 991px), (max-width: 767px) {
+    .navbar-one {
+        padding: 20px 0;
+    }
+}
+.navbar-one .navbar {
+    position: relative;
+    padding: 0;
+}
+.navbar-one .navbar .navbar-toggler .toggler-icon {
+    width: 30px;
+    height: 2px;
+    background-color: var(--success);
+    margin: 5px 0;
+    display: block;
+    position: relative;
+    -webkit-transition: all 0.3s ease-out 0s;
+    -moz-transition: all 0.3s ease-out 0s;
+    -ms-transition: all 0.3s ease-out 0s;
+    -o-transition: all 0.3s ease-out 0s;
+    transition: all 0.3s ease-out 0s;
+}
+.navbar-one .navbar .navbar-toggler.active .toggler-icon:nth-of-type(1) {
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -o-transform: rotate(45deg);
+    transform: rotate(45deg);
+    top: 7px;
+}
+.navbar-one .navbar .navbar-toggler.active .toggler-icon:nth-of-type(2) {
+    opacity: 0;
+}
+.navbar-one .navbar .navbar-toggler.active .toggler-icon:nth-of-type(3) {
+    -webkit-transform: rotate(135deg);
+    -moz-transform: rotate(135deg);
+    -ms-transform: rotate(135deg);
+    -o-transform: rotate(135deg);
+    transform: rotate(135deg);
+    top: -7px;
+}
+@media only screen and (min-width: 768px) and (max-width: 991px), (max-width: 767px) {
+    .navbar-one .navbar .navbar-collapse {
+        position: absolute;
+        top: 140%;
+        left: 0;
+        width: 100%;
+        background-color: var(--white);
+        z-index: 8;
+        padding: 10px 0;
+        border-radius: 0 0 5px 5px;
+    }
+}
+.navbar-one .navbar .navbar-nav .nav-item {
+    margin: 0 5px;
+    position: relative;
+}
+.navbar-one .navbar .navbar-nav .nav-item a {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    padding: 28px 15px;
+    color: var(--success);
+    text-transform: capitalize;
+    position: relative;
+    display: flex;
+    align-items: center;
+    z-index: 0;
+    -webkit-transition: all 0.3s ease-out 0s;
+    -moz-transition: all 0.3s ease-out 0s;
+    -ms-transition: all 0.3s ease-out 0s;
+    -o-transition: all 0.3s ease-out 0s;
+    transition: all 0.3s ease-out 0s;
+}
+.navbar-one .navbar .navbar-nav .nav-item a::before {
+    position: absolute;
+    content: "";
+    left: 0;
+    bottom: 0;
+    height: 100%;
+    width: 0%;
+    background-color: var(--success);
+    opacity: 0;
+    visibility: hidden;
+    z-index: -1;
+    pointer-events: none; /* ✅ This is the key fix */
+    -webkit-transition: all 0.3s ease-out 0s;
+    -moz-transition: all 0.3s ease-out 0s;
+    -ms-transition: all 0.3s ease-out 0s;
+    -o-transition: all 0.3s ease-out 0s;
+    transition: all 0.3s ease-out 0s;
+}
+.navbar-one .navbar .navbar-nav .nav-item a.active::before {
+    opacity: 0.1;
+    visibility: visible;
+    width: 100%;
+}
+.navbar-one .navbar .navbar-nav .nav-item a:hover::before {
+    opacity: 0.1;
+    visibility: visible;
+    width: 100%;
+}
+.navbar-one .navbar .navbar-nav .nav-item a i {
+    font-weight: 700;
+    padding-left: 8px;
+    font-size: 14px;
+}
+@media only screen and (min-width: 768px) and (max-width: 991px), (max-width: 767px) {
+    .navbar-one .navbar .navbar-nav .nav-item a {
+        padding: 10px 10px;
+        display: block;
+    }
+    .navbar-one .navbar .navbar-nav .nav-item a::before {
+        border-radius: 5px;
+    }
+}
+@media only screen and (min-width: 768px) and (max-width: 991px), (max-width: 767px) {
+    .navbar-one .navbar .navbar-nav .nav-item {
+        margin-bottom: 5px;
+    }
+    .navbar-one .navbar .navbar-nav .nav-item:last-child {
+        margin-bottom: 0;
+    }
+}
+.navbar-one .navbar .navbar-nav .nav-item:not(.dropdown) > a::before {
+    pointer-events: none;
+}
+@media (max-width: 991px) {
+    .navbar-one .navbar .navbar-btn {
+        position: relative;
+        top: auto;
+        right: auto;
+        /*margin-top: 10px; !* add vertical spacing *!*/
+        display: flex;
+        justify-content: center;
+    }
+
+    .navbar-one .navbar .navbar-btn ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px; /* spacing between login/signup */
+    }
+}
+
+.navbar-one .navbar .navbar-btn ul {
+    display: flex;
+}
+/*.navbar-one .navbar .navbar-btn ul li {*/
+/*    display: inline-block;*/
+/*    margin-right: 12px;*/
+/*}*/
+.navbar-one .navbar .navbar-btn ul li a {
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0;
+}
+.navbar-one .navbar .navbar-btn ul li a.primary-btn-outline {
+    border-color: var(--success);
+    color: var(--success);
+    border-radius: 50px;
+}
+.navbar-one .navbar .navbar-btn ul li a.primary-btn-outline:hover {
+    background-color: var(--success);
+    color: var(--white);
+}
+.navbar-one .navbar .navbar-btn ul li a.primary-btn {
+    background-color: var(--success);
+    color: var(--white);
+    border-color: var(--success);
+    border-radius: 50px;
+}
+.navbar-one .navbar .navbar-btn ul li a.primary-btn:hover {
+    background-color: transparent;
+    color: var(--success);
+}
+
+.navbar-logo-text {
+    font-size: 28px; /* or 32px if you want it even bigger */
+    font-weight: 700;
+    color: var(--success);
+    text-transform: none;
+    letter-spacing: -0.5px;
+    font-family: var(--font-family); /* so it matches the rest */
+    display: inline-block;
+    padding: 12px 0; /* aligns vertically with nav items */
+}
+
+@media (max-width: 991px) {
+    .navbar-one .navbar {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: nowrap;
+        padding: 10px 20px;
+        position: relative;
+    }
+
+    .navbar-one .navbar .navbar-brand {
+        order: 1;
+        flex: 0 0 auto;
+        margin-right: auto;
+    }
+
+    .navbar-one .navbar .navbar-btn {
+        order: 2;
+        flex: 1 1 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .navbar-one .navbar .navbar-btn ul {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+    }
+
+    .navbar-one .navbar .navbar-toggler {
+        order: 3;
+        flex: 0 0 auto;
+        margin-left: auto;
+    }
+}
+
+/* ===== Balance logo and button width ===== */
+@media (min-width: 992px) {
+    .navbar-one .navbar .navbar-brand,
+    .navbar-one .navbar .navbar-btn {
+        min-width: 180px; /* adjust this value until it feels visually balanced */
+    }
+
+    .navbar-one .navbar .navbar {
+        justify-content: space-between;
+    }
+
+    .navbar-one .navbar .navbar-btn {
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+.navbar-one .navbar .navbar-btn .dropdown-toggle {
+    border-radius: 50px;
+    padding: 8px 20px;
+    display: inline-flex;
+    align-items: center;
+}
+.dropdown-menu {
+    display: none;
+    opacity: 0;
+    visibility: hidden;
+    font-size: 14px;
+    min-width: auto;
+    padding: 0;
+    border-radius: 20px;
+}
+
+.dropdown-menu.show {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    border-radius: 20px;
+}
+.navbar-btn {
+    position: relative;
+    z-index: 1000; /* make sure it stacks above other stuff */
+}
+
+.navbar-one .dropdown-menu.dropdown-menu-end.show {
+    display: block !important;
+}
+
+.navbar-one .dropdown-menu.dropdown-menu-end.show > li {
+    display: block !important;
+}
+.dropdown-item {
+    padding: 0.5rem 0.5rem;
+    text-align: center;
+    width: 100%;
+}
+.dropdown-menu > li {
+    text-align: center;
+}
+
+/* Match dropdown width to trigger button */
+.navbar-one .dropdown-menu.dropdown-menu-end {
+    min-width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    border-radius: 20px;
+    /*padding: 0.5rem 0;*/
+    text-align: center;
+    box-shadow: var(--shadow-3);
+}
+/*.navbar-one .dropdown-menu.dropdown-menu-end {*/
+/*    background-color: transparent !important;  !* removes white background *!*/
+/*    border: none !important;                   !* removes any border *!*/
+/*    box-shadow: none !important;               !* removes default Bootstrap shadow *!*/
+/*    padding: 0.5rem 0;*/
+/*    border-radius: 20px;*/
+/*    min-width: 100% !important;*/
+/*    left: 0 !important;*/
+/*    right: 0 !important;*/
+/*    text-align: center;*/
+/*}*/
+
+/* Match dropdown hover style to nav-item */
+.navbar-one .dropdown-menu .dropdown-item {
+    position: relative;
+    font-weight: 600;
+    color: var(--black);
+    transition: all 0.3s ease-out 0s;
+    z-index: 0;
+    text-align: center;
+}
+
+.navbar-one .dropdown-menu .dropdown-item:hover {
+    background-color: transparent !important;
+    color: var(--success-dark); /* Optional */
+}
+
+.navbar-one .dropdown-menu .dropdown-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 100%;
+    width: 0%;
+    background-color: var(--success);
+    opacity: 0.1;
+    visibility: hidden;
+    z-index: -1;
+    transition: all 0.3s ease-out 0s;
+    border-radius: 20px; /* ✅ applies to all corners */
+}
+
+.navbar-one .dropdown-menu .dropdown-item:hover::before {
+    width: 100%;
+    visibility: visible;
+}
