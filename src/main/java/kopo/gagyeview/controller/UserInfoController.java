@@ -38,6 +38,12 @@ public class UserInfoController {
 
         return "/user/userRegForm";
     }
+    @GetMapping(value = "/loginForm")
+    public String loginForm() {
+        log.info("{}.loginForm", this.getClass().getName());
+
+        return "/user/loginForm";
+    }
 
     /**
      * 회원 가입 전 아이디 중복체크하기( AJAX를 통해 입력한 아이디 정보 받음)

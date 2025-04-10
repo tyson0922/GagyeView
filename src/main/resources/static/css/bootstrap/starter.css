@@ -5,7 +5,7 @@
   COMMON css 
 ===========================*/
 :root {
-  --font-family: "Noto Sans Kr","Jua", sans-serif;
+  --font-family: "Noto Sans Kr", "Jua", sans-serif;
   --primary: #155bd5;
   --primary-dark: #1c3ab6;
   --primary-light: #e2f1ff;
@@ -22,8 +22,8 @@
   --info-dark: #0f8ca8;
   --info-light: #e0f5fa;
   --caution: #dbbb25;
-  --caution-dark: #d58f15;
-  --caution-light: #fbf9e4;
+  --caution-dark: #ED7D2B;
+  --caution-light: #FFB93E;
   --error: #e6185e;
   --error-dark: #bf1257;
   --error-light: #fce4eb;
@@ -105,8 +105,9 @@ h3,
 h4,
 h5,
 h6 {
-  font-weight: 600;
-  color: var(--black);
+  font-family: "Jua", sans-serif !important;
+  font-weight: 400;
+  color: var(--caution-dark);
   margin: 0px;
 }
 
@@ -198,7 +199,7 @@ p {
 }
 
 .btn {
-  font-weight: bold;
+  font-weight: 400;
   font-size: 16px;
   line-height: 20px;
   text-align: center;

@@ -1,0 +1,42 @@
+.single-card {
+    width: 100%;
+    max-width: 500px;
+    min-width: 300px;
+    margin: 30px auto; /* Center horizontally with top spacing */
+    padding: 16px;
+    border-style: solid;
+    border-color: var(--caution-light);
+    border-width: 5px;
+    background-color: var(--white);
+    box-shadow: var(--shadow-1);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease-out;
+}
+
+.card-icon {
+    margin-top: 20px;
+    font-size: 100px;
+    color: var(--caution-dark);
+}
+
+.card-icon:hover {
+    color: var(--caution-light);
+    cursor: pointer;
+}
+
+.card-content .title {
+    /*margin-top: 16px;*/
+    font-size: 24px;
+    color: var(--caution-dark);
+}
+
+@media (max-width: 480px) {
+    .signin-area.signin-one .single-card.card-style-one {
+        width: 90% !important;
+        max-width: 400px !important;
+        margin: 30px auto !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+}

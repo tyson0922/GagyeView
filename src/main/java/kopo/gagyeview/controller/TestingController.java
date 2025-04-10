@@ -9,20 +9,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Slf4j
 @RequiredArgsConstructor
 @Controller
-public class MainController {
+public class TestingController {
 
-    @GetMapping(value="/")
+    @GetMapping(value = "/test/index")
     public String mainPage(HttpSession session) {
 
         log.info("{}.mainPage Start!", this.getClass().getName());
-//        session.setAttribute("SS_USER_ID", "Tyson");
-//        session.setAttribute("SS_USER_NAME", "김태승");
-        session.setAttribute("SS_USER_ID", null);
-        session.setAttribute("SS_USER_NAME", null);
-
+        session.setAttribute("SS_USER_ID", "Tyson");
+        session.setAttribute("SS_USER_NAME", "김태승");
         log.info("{}.mainPage End!", this.getClass().getName());
 
-        return "index";
+        return "test/index";
     }
 
 }
