@@ -45,6 +45,30 @@ public class UserInfoController {
         return "/user/loginForm";
     }
 
+    @GetMapping(value="/findId")
+    public String findId() {
+        log.info("{}.findId", this.getClass().getName());
+        return "/user/findId";
+    }
+
+    @GetMapping(value="/findPw")
+    public String findPw() {
+        log.info("{}.findPw", this.getClass().getName());
+        return "/user/findPw";
+    }
+
+    @GetMapping(value="/newPw")
+    public String newPw() {
+        log.info("{}.newPw", this.getClass().getName());
+        return "/user/newPw";
+    }
+
+    @GetMapping(value="/myPage")
+    public String myPage() {
+        log.info("{}.myPage", this.getClass().getName());
+        return "/user/myPage";
+    }
+
     /**
      * 회원 가입 전 아이디 중복체크하기( AJAX를 통해 입력한 아이디 정보 받음)
      */

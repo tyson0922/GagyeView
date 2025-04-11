@@ -1,0 +1,195 @@
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-input .help-block {
+    margin-top: 2px;
+}
+.form-input .help-block .list-unstyled li {
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--error);
+}
+.form-input label {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--dark-3);
+    margin-bottom: 8px;
+    display: inline-block;
+}
+.form-input .input-items {
+    position: relative;
+}
+.form-input .input-items input, .form-input .input-items textarea {
+    width: 100%;
+    height: 44px;
+    border: 2px solid;
+    padding-left: 44px;
+    padding-right: 12px;
+    position: relative;
+    font-size: 16px;
+}
+.form-input .input-items input:focus, .form-input .input-items textarea:focus {
+    box-shadow: var(--shadow-4);
+}
+.form-input .input-items textarea {
+    padding-top: 8px;
+    height: 130px;
+    resize: none;
+}
+.form-input .input-items .input-icon {
+    position: absolute;
+    top: 11px;
+    left: 13px;
+    font-size: 20px;
+    z-index: 9;
+    color: var(--caution-light)
+}
+.form-input .input-items:focus-within .input-icon {
+    color: var(--caution-dark);
+}
+.form-input .input-items.default input, .form-input .input-items.default textarea {
+    border-color: var(--caution-light);
+    color: var(--dark-3);
+}
+.form-input .input-items.default input:focus, .form-input .input-items.default textarea:focus {
+    border-color: var(--caution-dark);
+}
+.form-input .input-items.default input::placeholder, .form-input .input-items.default textarea::placeholder {
+    color: var(--dark-3);
+    opacity: 1;
+}
+
+.form-style-five .form-input {
+    position: relative;
+    flex: 1 1 100%;
+}
+.form-style-five .form-input label {
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    background-color: var(--white);
+    z-index: 5;
+    padding: 0 5px;
+}
+.form-style-five .form-input .input-items input, .form-style-five .form-input .input-items textarea {
+    border-radius: 5px;
+}
+.input-row {
+    margin: 0 20%;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/*buttons*/
+
+/* Main button row wrapper */
+.button-row {
+    margin: 0 20%;
+}
+
+.button-row ul {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.button-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.left-btn, .right-btn {
+    width: 100%;
+    text-align: center;
+}
+
+.left-btn {
+    margin-right: auto;
+}
+
+.right-btn {
+    margin-left: auto;
+}
+
+/* Special case: full-width button row (like 로그인) */
+.button-full-row {
+    margin: 0 20%;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.button-full-row .button-item {
+    width: 100%;
+}
+
+.full-button-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-sm {
+    font-size: 12px;
+    padding: 4px 12px;
+}
+.dashed-full-row {
+    display: flex;
+    justify-content: center;
+}
+
+.dashed-line-container {
+    width: 100%;
+    margin: 0 20%; /* ✅ Apply margin here, not on dashed-full-row */
+}
+
+.divider-dashed {
+    border: none;
+    border-top: 1px dashed var(--caution-light);
+    width: 100%;
+    /*margin: 24px 0;*/
+}
+
+.caution-btn {
+    background: var(--caution-light);
+    color: var(--white);
+    box-shadow: var(--shadow-2);
+    border-radius: 50px;
+}
+.active.caution-btn, .caution-btn:hover, .caution-btn:focus {
+    background: var(--caution-dark);
+    color: var(--white);
+    box-shadow: var(--shadow-4);
+}
+
+.caution-btn-outline {
+    border-color: var(--caution-light);
+    color: var(--caution-light);
+    border-radius: 50px;
+}
+.active.caution-btn-outline, .caution-btn-outline:hover, .caution-btn-outline:focus {
+    background: var(--caution-dark);
+    color: var(--white);
+}
+
+.caution-btn-link {
+    color: var(--caution-light);
+}
+.active.caution-btn-link, .caution-btn-link:hover, .caution-btn-link:focus {
+    color: var(--caution-dark);
+}
+/* Input box should shrink a little to allow room for button */
+.input-left {
+    flex: 1;
+    margin-right: 8px; /* spacing between input and button */
+}
+
+/* Button stays fixed-size and aligns to the bottom of the input */
+.input-check-button-right {
+    display: flex;
+    align-items: flex-end;
+}

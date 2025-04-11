@@ -2,7 +2,7 @@
     width: 100%;
     max-width: 500px;
     min-width: 300px;
-    margin: 30px auto; /* Center horizontally with top spacing */
+    margin: auto; /* Center horizontally with top spacing */
     padding: 16px;
     border-style: solid;
     border-color: var(--caution-light);
@@ -20,10 +20,10 @@
     color: var(--caution-dark);
 }
 
-.card-icon:hover {
-    color: var(--caution-light);
-    cursor: pointer;
-}
+/*.card-icon:hover {*/
+/*    color: var(--caution-light);*/
+/*    cursor: pointer;*/
+/*}*/
 
 .card-content .title {
     /*margin-top: 16px;*/
