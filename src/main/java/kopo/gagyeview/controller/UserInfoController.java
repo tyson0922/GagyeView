@@ -1,5 +1,7 @@
 package kopo.gagyeview.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import kopo.gagyeview.controller.response.CommonResponse;
 import kopo.gagyeview.dto.ExistsYnDTO;
 import kopo.gagyeview.dto.SweetAlertMsgDTO;
@@ -38,6 +40,7 @@ public class UserInfoController {
 
         return "/user/userRegForm";
     }
+
     @GetMapping(value = "/loginForm")
     public String loginForm() {
         log.info("{}.loginForm", this.getClass().getName());
@@ -45,25 +48,25 @@ public class UserInfoController {
         return "/user/loginForm";
     }
 
-    @GetMapping(value="/findId")
+    @GetMapping(value = "/findId")
     public String findId() {
         log.info("{}.findId", this.getClass().getName());
         return "/user/findId";
     }
 
-    @GetMapping(value="/findPw")
+    @GetMapping(value = "/findPw")
     public String findPw() {
         log.info("{}.findPw", this.getClass().getName());
         return "/user/findPw";
     }
 
-    @GetMapping(value="/newPw")
+    @GetMapping(value = "/newPw")
     public String newPw() {
         log.info("{}.newPw", this.getClass().getName());
         return "/user/newPw";
     }
 
-    @GetMapping(value="/myPage")
+    @GetMapping(value = "/myPage")
     public String myPage() {
         log.info("{}.myPage", this.getClass().getName());
         return "/user/myPage";
@@ -94,10 +97,10 @@ public class UserInfoController {
         ExistsYnDTO rDTO = Optional.ofNullable(userInfoService.getUserIdExists(pDTO))
                 .orElse(ExistsYnDTO.builder().build());
         log.info("rDTO: {}", rDTO);
-        log.info("rDTO.existsYn : {}", rDTO.existsYn());
+        log.info("rDTO.existsYn : {}", rDTO.getExistsYn());
 
         // 아이디는 소분자 대문자 구분 안하기
-        if ("Y".equalsIgnoreCase(rDTO.existsYn())) {
+        if ("Y".equalsIgnoreCase(rDTO.getExistsYn())) {
             return ResponseEntity.ok(
                     CommonResponse.of(HttpStatus.OK, "fail",
                             SweetAlertMsgDTO.fail("중복된 아이디", "이미 존재하는 아이디입니다."))
@@ -120,7 +123,8 @@ public class UserInfoController {
     @PostMapping(value = "getEmailExists")
     public ResponseEntity<? extends CommonResponse<?>> getEmailExists(
             @Validated(OnSendEmail.class) @RequestBody UserInfoDTO pDTO,
-            BindingResult bindingResult) throws Exception {
+            BindingResult bindingResult,
+            HttpServletRequest request) throws Exception {
 
         log.info("{}.getEmailExists Start!", this.getClass().getName());
 
@@ -143,17 +147,35 @@ public class UserInfoController {
         ExistsYnDTO rDTO = Optional.ofNullable(userInfoService.getUserEmailExists(eDTO))
                 .orElse(ExistsYnDTO.builder().build());
         log.info("rDTO: {}", rDTO);
-        log.info("rDTO.existsYn: {}", rDTO.existsYn());
+        log.info("rDTO.existsYn: {}", rDTO.getExistsYn());
 
         // 이메일 존재 하면
         // 이메일은 정확하게 대소문자 구분해서 확인
-        if ("Y".equals(rDTO.existsYn())) {
+        if ("Y".equals(rDTO.getExistsYn())) {
 
             return ResponseEntity.ok(
                     CommonResponse.of(HttpStatus.OK, "fail",
                             SweetAlertMsgDTO.fail("중복된 이메일", "이미 가입된 이메일입니다"))
             );
         }
+
+        if (rDTO.getAuthNumber() != null) {
+            HttpSession session = request.getSession();
+            Long sentTime = (Long) session.getAttribute("authSentTime");
+
+            if (sentTime != null && System.currentTimeMillis() - sentTime > 5 * 60 * 1000) {
+                session.removeAttribute("authNumber");
+                session.removeAttribute("authSentTime");
+                log.info("Expired authNumber removed from session.");
+            }
+
+            session.setAttribute("authEmail", email);
+            session.setAttribute("authNumber", rDTO.getAuthNumber());
+            session.setAttribute("authSentTime", System.currentTimeMillis());
+            log.info("New authNumber saved to session: {}", rDTO.getAuthNumber());
+
+        }
+
         log.info("{}.getEmailExists End!", this.getClass().getName());
 
         return ResponseEntity.ok(
@@ -162,6 +184,42 @@ public class UserInfoController {
         );
     }
 
+//    /**
+//     * 이메일 인증 확인
+//     */
+//    @ResponseBody
+//    @PostMapping("/verifyEmailAuth")
+//    public ResponseEntity<? extends CommonResponse<?>> verifyEmailAuth(
+//            @RequestBody String inputCode,
+//            HttpServletRequest request) throws Exception {
+//        HttpSession session = request.getSession();
+//        Integer savedCode = (Integer) session.getAttribute("authNumber");
+//
+//        if (savedCode == null) {
+//            return ResponseEntity.ok(CommonResponse.of(
+//                    HttpStatus.BAD_REQUEST, "fail",
+//                            SweetAlertMsgDTO.fail("만료됨", "인증번호가 만료되었습니다. 다시 요청해주세요")
+//            ));
+//        }
+//
+//        if(!inputCode.trim().equals(savedCode.toString())) {
+//            return ResponseEntity.ok(CommonResponse.of(
+//                    HttpStatus.BAD_REQUEST, "fail",
+//                    SweetAlertMsgDTO.fail("불일치", "인증번호가 일치하지 않습니다")
+//            ));
+//        }
+//
+//        // 이메일 인증 성공 후 세션 이메일 인증 정보 제거
+//        session.removeAttribute("authNumber");
+//        session.removeAttribute("authSentTime");
+//
+//        session.setAttribute("verifiedEmail", session.getAttribute("authEmail") );
+//
+//        return ResponseEntity.ok(CommonResponse.of(
+//                HttpStatus.OK,"success",
+//                SweetAlertMsgDTO.success( "이메일 인증 성공", "이메일 인증이 완료되었습니다.")));
+//    }
+
     /**
      * 회원가입 로직 처리
      */
@@ -169,7 +227,7 @@ public class UserInfoController {
     @PostMapping(value = "insertUserInfo")
     public ResponseEntity<? extends CommonResponse<?>> insertUserInfo(
             @Validated(OnRegister.class) @RequestBody UserInfoDTO pDTO,
-            BindingResult bindingResult) throws Exception {
+            BindingResult bindingResult, HttpServletRequest request) throws Exception {
 
         log.info("{}.insertUserInfo Start!", this.getClass().getName());
 
@@ -197,10 +255,32 @@ public class UserInfoController {
             String userEmail = CmmUtil.nvl(pDTO.userEmail());
             String userPw = CmmUtil.nvl(pDTO.userPw());
 
+
             log.info("userId: {}", userId);
             log.info("userName: {}", userName);
             log.info("userEmail: {}", userEmail);
             log.info("userPw: {}", userPw);
+
+
+            // 이메일 인증 체크
+            HttpSession session = request.getSession();
+            String inputAuthCode = CmmUtil.nvl(pDTO.authNumber());
+            Integer savedCode = (Integer) session.getAttribute("authNumber");
+            String savedEmail = (String) session.getAttribute("authEmail");
+
+            if (savedCode == null || savedEmail == null || !userEmail.equals(savedEmail)) {
+                samTitle = "이메일 인증 필요";
+                samText = "이메일 인증을 진행해주세요.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+                return ResponseEntity.ok(CommonResponse.of(HttpStatus.BAD_REQUEST, "fail", samDTO));
+            }
+
+            if (!inputAuthCode.equals(savedCode.toString())) {
+                samTitle = "인증 실패";
+                samText = "인증번호가 일치하지 않습니다.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+                return ResponseEntity.ok(CommonResponse.of(HttpStatus.BAD_REQUEST, "fail", samDTO));
+            }
 
             pDTO = UserInfoDTO.builder()
                     .userId(userId)
@@ -214,7 +294,7 @@ public class UserInfoController {
             ExistsYnDTO emailDTO = userInfoService.getUserEmailExists(pDTO);
             log.info("idDTO: {} / emailDTO: {}", idDTO, emailDTO);
 
-            if ("Y".equals(idDTO.existsYn()) || "Y".equals(emailDTO.existsYn())) {
+            if ("Y".equals(idDTO.getExistsYn()) || "Y".equals(emailDTO.getExistsYn())) {
 
                 samTitle = "아이디 또는 이메일 중복.";
                 samText = "아이디 또는 이메일이 중복합니다.";
@@ -239,6 +319,9 @@ public class UserInfoController {
                 //SweetAlertMsgDTO 생성(record 안에 있는 method 사용)
                 samDTO = SweetAlertMsgDTO.success(samTitle, samText);
                 log.info("samDTO: {}", samDTO);
+
+                session.removeAttribute("verifiedEmail");
+                session.removeAttribute("authEmail");
 
                 // 결과 메시지 보내기 준비
                 response = ResponseEntity.ok(CommonResponse.of(
@@ -271,12 +354,11 @@ public class UserInfoController {
             log.info("{}.insertUserInfo Error", this.getClass().getName(), e);
 
         } finally {
-            log.info("samTitle: {} samText: {}",samTitle,samText);
+            log.info("samTitle: {} samText: {}", samTitle, samText);
             log.info("{}.insertUserInfo End!", this.getClass().getName());
         }
         return response;
     }
-
 
 
 }

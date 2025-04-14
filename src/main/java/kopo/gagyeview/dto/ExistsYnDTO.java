@@ -1,11 +1,13 @@
 package kopo.gagyeview.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
+import lombok.*;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public record ExistsYnDTO( // 존재 여부 확인 dto
-        String existsYn
-) {
+public class ExistsYnDTO {
+    private String existsYn;
+    private Integer authNumber;
 }

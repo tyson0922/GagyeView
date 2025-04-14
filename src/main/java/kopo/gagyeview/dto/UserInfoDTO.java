@@ -46,6 +46,6 @@ public record UserInfoDTO(
         String existsYn,
 
         @NotBlank(message = "인증번호는 필수 학목입니다.", groups = OnVerifyAuth.class)
-        Integer authNumber // 이메일 중복체크를 위한 인증번호
+        String authNumber // 이메일 중복체크를 위한 인증번호
 ) {
 }

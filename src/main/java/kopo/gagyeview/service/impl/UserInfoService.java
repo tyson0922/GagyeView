@@ -45,7 +45,7 @@ public class UserInfoService implements IUserInfoService {
 
         log.info("rDTO: {}", rDTO);
 
-        if (CmmUtil.nvl(rDTO.existsYn()).equals("N")){
+        if (CmmUtil.nvl(rDTO.getExistsYn()).equals("N")){
 
             // 6자리 랜덤 숫자 생성하기 (Integer because of Validation check)
             Integer authNumber = ThreadLocalRandom.current().nextInt(100000, 1000000);
@@ -62,7 +62,7 @@ public class UserInfoService implements IUserInfoService {
             mailService.sendMail(mDTO);
 
             mDTO = null;
-
+            rDTO.setAuthNumber(authNumber);
         }
 
         log.info("{}.getUserEmailExists End!", this.getClass().getName());
