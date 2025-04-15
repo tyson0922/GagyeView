@@ -184,42 +184,6 @@ public class UserInfoController {
         );
     }
 
-//    /**
-//     * 이메일 인증 확인
-//     */
-//    @ResponseBody
-//    @PostMapping("/verifyEmailAuth")
-//    public ResponseEntity<? extends CommonResponse<?>> verifyEmailAuth(
-//            @RequestBody String inputCode,
-//            HttpServletRequest request) throws Exception {
-//        HttpSession session = request.getSession();
-//        Integer savedCode = (Integer) session.getAttribute("authNumber");
-//
-//        if (savedCode == null) {
-//            return ResponseEntity.ok(CommonResponse.of(
-//                    HttpStatus.BAD_REQUEST, "fail",
-//                            SweetAlertMsgDTO.fail("만료됨", "인증번호가 만료되었습니다. 다시 요청해주세요")
-//            ));
-//        }
-//
-//        if(!inputCode.trim().equals(savedCode.toString())) {
-//            return ResponseEntity.ok(CommonResponse.of(
-//                    HttpStatus.BAD_REQUEST, "fail",
-//                    SweetAlertMsgDTO.fail("불일치", "인증번호가 일치하지 않습니다")
-//            ));
-//        }
-//
-//        // 이메일 인증 성공 후 세션 이메일 인증 정보 제거
-//        session.removeAttribute("authNumber");
-//        session.removeAttribute("authSentTime");
-//
-//        session.setAttribute("verifiedEmail", session.getAttribute("authEmail") );
-//
-//        return ResponseEntity.ok(CommonResponse.of(
-//                HttpStatus.OK,"success",
-//                SweetAlertMsgDTO.success( "이메일 인증 성공", "이메일 인증이 완료되었습니다.")));
-//    }
-
     /**
      * 회원가입 로직 처리
      */

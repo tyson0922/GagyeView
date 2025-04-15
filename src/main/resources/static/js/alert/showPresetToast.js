@@ -46,7 +46,14 @@ function showPresetToast(type, customTitle = '', customText = '', callback){
         Swal.fire({
             ...baseConfig,
             title: customTitle || baseConfig.title || '',
-            text: customText || baseConfig.text || ''
+            text: customText || baseConfig.text || '',
+            showClass: {
+                // popup: 'animate_animated animate__bounce'
+                popup: 'animate__animated animate__fadeIn'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOut'
+            }
         }).then((result) => {
             if (result.isConfirmed && typeof callback === 'function') {
                 callback(result);
