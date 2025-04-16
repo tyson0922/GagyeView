@@ -19,17 +19,29 @@
     <!--    loginForm css-->
     <link rel="stylesheet" href="/css/components/buttonAndInput.css"/>
 
+    <link rel="stylesheet" href="/css/alert/customToastStyle.css">
 
-    <!--====== Bootstrap js ======-->
-    <!--    <script type="text/javascript" src="/js/bootstrap/bootstrap.bundle.min.js"></script>-->
+    <!--SweetAlert Animate-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
     <!-- Bootstrap Bundle JS (includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" src="/js/jquery/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="/js/jquery/jquery.serializeObject.min.js"></script>
 
     <script type="text/javascript" src="/js/components/appbar.js"></script>
 
     <!--    iconify icons(better than lineicon)-->
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
 
+
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script type="text/javascript" src="/js/alert/showPresetToast.js"></script>
+    <!-- signUp.js -->
+    <script type="text/javascript" src="/js/pages/signUp.js"></script>
     <title>아이디 찾기</title>
 </head>
 <body>
@@ -40,7 +52,7 @@
             <div class="col-lg-12">
                 <nav class="navbar navbar-expand-lg align-items-center justify-content-between">
                     <!-- Logo (fixed width) -->
-                    <a class="navbar-brand" href="javascript:void(0)">
+                    <a class="navbar-brand" href="/">
                         <h1 class="navbar-logo-text">가계뷰</h1>
                     </a>
 
@@ -63,13 +75,13 @@
                     <div class="collapse navbar-collapse justify-content-center" id="navbarOne">
                         <ul class="navbar-nav">
                             <li class="nav-item">
-                                <a href="javascript:void(0)">소비 분석</a>
+                                <a href="/finance/">소비 분석</a>
                             </li>
                             <li class="nav-item">
-                                <a href="javascript:void(0)">영수증 등록</a>
+                                <a href="/receipt/">영수증 등록</a>
                             </li>
                             <li class="nav-item">
-                                <a href="javascript:void(0)">마트 안내</a>
+                                <a href="/map/">마트 안내</a>
                             </li>
                         </ul>
                     </div>
@@ -125,14 +137,14 @@
                 <div class="card-content text-center">
                     <h1 class="title">아이디 찾기</h1>
 
-                    <div class="form-style form-style-five">
+                    <form id="form" class="form-style form-style-five">
 
                         <div class="d-flex gap-3 input-row">
                             <!-- password input -->
                             <div class="form-input mt-3">
                                 <label>이메일</label>
                                 <div class="input-items default">
-                                    <input type="email" placeholder="Email"/>
+                                    <input name="userEmail" type="email" placeholder="Email"/>
                                     <iconify-icon icon="material-symbols:mail-outline-rounded"
                                                   class="input-icon"></iconify-icon>
                                 </div>
@@ -143,15 +155,15 @@
                             <div class="form-input mt-4">
                                 <label>이메일 인증번호 확인</label>
                                 <div class="input-items default input-left">
-                                    <input type="text" placeholder=""/>
+                                    <input name="authNumber" type="text" placeholder=""/>
                                     <iconify-icon icon="material-symbols:numbers-rounded"
                                                   class="input-icon"></iconify-icon>
                                 </div>
                             </div>
                             <!-- Button (right) -->
                             <div class="button-item mt-4 input-check-button-right">
-                                <a href="javascript:void(0)" class="btn caution-btn-outline btn-sm right-btn">인증 메일
-                                    보내기</a>
+                                <button id="emailBtn" class="btn caution-btn-outline btn-sm right-btn">인증 메일
+                                    보내기</button>
                             </div>
 
                         </div>
@@ -159,7 +171,7 @@
                         <div class="d-flex button-full-row">
                             <ul class="d-flex flex-wrap mt-3 w-100">
                                 <li class="full-button-item w-100">
-                                    <a href="javascript:void(0)" class="btn caution-btn btn-sm w-100">아이디 찾기</a>
+                                    <button id="findIdBtn" class="btn caution-btn btn-sm w-100">아이디 찾기</button>
                                 </li>
                             </ul>
                         </div>
@@ -173,11 +185,11 @@
                             <!-- password input -->
                             <ul class="d-flex flex-wrap">
                                 <li class="button-item">
-                                    <a href="javascript:void(0)" class="btn caution-btn-outline btn-sm left-btn"> 비밀번호
+                                    <a href="/user/findPw" class="btn caution-btn-outline btn-sm left-btn"> 비밀번호
                                         찾기 </a>
                                 </li>
                                 <li class="button-item">
-                                    <a href="javascript:void(0)" class="btn caution-btn-outline btn-sm right-btn"> 로그인</a>
+                                    <a href="/user/login" class="btn caution-btn-outline btn-sm right-btn"> 로그인</a>
                                 </li>
                             </ul>
 
@@ -185,13 +197,13 @@
                         <div class="d-flex button-full-row">
                             <ul class="d-flex flex-wrap w-100 mt-3">
                                 <li class="full-button-item w-100">
-                                    <a href="javascript:void(0)" class="btn caution-btn-outline btn-sm w-100">회원가입</a>
+                                    <a href="/user/userRegForm" class="btn caution-btn-outline btn-sm w-100">회원가입</a>
                                 </li>
                             </ul>
                         </div>
 
 
-                    </div>
+                    </form>
                 </div>
 
             </div>

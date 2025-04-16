@@ -8,6 +8,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -15,29 +17,60 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.AlgorithmParameterSpec;
+import java.util.Properties;
 
 public class EncryptUtil {
 
-    /*
-     * 암호화 알고리즘에 추가시킬 암호화 문구
-     *
-     * 일반적인 암호화 알고리즘 SHA-256을 통해서만 암호화 시킬 경우,
-     * 암호화 된 값만 보고 일반적인 비밀번호에 대한 값을 쉽게
-     * 예측이 가능함 따라서, 암호화할 때 암호화되는 값에 추가적인
-     *  문자열을 부텨서 함께 암호화를 진행함
-     */
-    final static String addMessage="MyGradProject"; // 임의 값
+//    /*
+//     * 암호화 알고리즘에 추가시킬 암호화 문구
+//     *
+//     * 일반적인 암호화 알고리즘 SHA-256을 통해서만 암호화 시킬 경우,
+//     * 암호화 된 값만 보고 일반적인 비밀번호에 대한 값을 쉽게
+//     * 예측이 가능함 따라서, 암호화할 때 암호화되는 값에 추가적인
+//     *  문자열을 부텨서 함께 암호화를 진행함
+//     */
+//    final static String addMessage="MyGradProject"; // 임의 값
+//
+//    /*
+//     * AES128-CBC 암호화 알고리즘에 사용되는 초기 백터와 암호화 키
+//     */
+//
+//    // 초기 백터(16 바이트 크기를 가지며, 16바이트 단위로 암호화시, 암호화할 총 길이가 16바이트가 되지 못하면 뒤에 추가하는 바이트)
+//    final static byte[] ivBytes = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+//            0x00, 0x00, 0x00, 0x00,	0x00, 0x00, 0x00, 0x00 };
+//
+//    // AES128-CBC 암호화 알고리즘에 사용되는 키 (16 자리 문자만 가능함)
+//    final static String key = "PolyTechnic12345"; // 16 글자(영문자 1글자당 1바이트임)
 
-    /*
-     * AES128-CBC 암호화 알고리즘에 사용되는 초기 백터와 암호화 키
-     */
+    private static final byte[] ivBytes = new byte[16]; // 16-byte IV
+    private static String key = "defaultKey123456";     // fallback default
+    private static String addMessage = "defaultSalt";   // fallback default
 
-    // 초기 백터(16 바이트 크기를 가지며, 16바이트 단위로 암호화시, 암호화할 총 길이가 16바이트가 되지 못하면 뒤에 추가하는 바이트)
-    final static byte[] ivBytes = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00,	0x00, 0x00, 0x00, 0x00 };
+    static {
+        try {
+            // First try: classpath
+            InputStream input = EncryptUtil.class.getClassLoader()
+                    .getResourceAsStream("credentials/api-keys.properties");
 
-    // AES128-CBC 암호화 알고리즘에 사용되는 키 (16 자리 문자만 가능함)
-    final static String key = "PolyTechnic12345"; // 16 글자(영문자 1글자당 1바이트임)
+            // If not found, try absolute file path
+            if (input == null) {
+                input = new FileInputStream("D:/SpringBootProjects/GagyeView/credentials/api-keys.properties");
+            }
+
+            Properties props = new Properties();
+            props.load(input);
+
+            key = props.getProperty("encryption.aes-key", key);
+            addMessage = props.getProperty("encryption.add-message", addMessage);
+
+            System.out.println("✅ AES Key Loaded: " + key);
+            System.out.println("✅ AddMessage Loaded: " + addMessage);
+
+        } catch (Exception e) {
+            System.err.println("⚠️ Failed to load encryption config. Using defaults. Reason: " + e.getMessage());
+        }
+    }
+
 
     /**
      * 해시 알고리즘(단방향 암호화 알고리즘)-SHA-256

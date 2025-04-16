@@ -20,15 +20,29 @@
     <link rel="stylesheet" href="/css/components/buttonAndInput.css"/>
 
 
-    <!--====== Bootstrap js ======-->
-    <!--    <script type="text/javascript" src="/js/bootstrap/bootstrap.bundle.min.js"></script>-->
+    <link rel="stylesheet" href="/css/alert/customToastStyle.css">
+
+    <!--SweetAlert Animate-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
     <!-- Bootstrap Bundle JS (includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" src="/js/jquery/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="/js/jquery/jquery.serializeObject.min.js"></script>
 
     <script type="text/javascript" src="/js/components/appbar.js"></script>
 
     <!--    iconify icons(better than lineicon)-->
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+
+
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script type="text/javascript" src="/js/alert/showPresetToast.js"></script>
+    <!-- signUp.js -->
+    <script type="text/javascript" src="/js/pages/signUp.js"></script>
 
     <title>비밀번호 생성</title>
 </head>
@@ -40,7 +54,7 @@
             <div class="col-lg-12">
                 <nav class="navbar navbar-expand-lg align-items-center justify-content-between">
                     <!-- Logo (fixed width) -->
-                    <a class="navbar-brand" href="javascript:void(0)">
+                    <a class="navbar-brand" href="/">
                         <h1 class="navbar-logo-text">가계뷰</h1>
                     </a>
 
@@ -63,13 +77,13 @@
                     <div class="collapse navbar-collapse justify-content-center" id="navbarOne">
                         <ul class="navbar-nav">
                             <li class="nav-item">
-                                <a href="javascript:void(0)">소비 분석</a>
+                                <a href="/finance/">소비 분석</a>
                             </li>
                             <li class="nav-item">
-                                <a href="javascript:void(0)">영수증 등록</a>
+                                <a href="/receipt/">영수증 등록</a>
                             </li>
                             <li class="nav-item">
-                                <a href="javascript:void(0)">마트 안내</a>
+                                <a href="/map/">마트 안내</a>
                             </li>
                         </ul>
                     </div>

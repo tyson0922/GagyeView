@@ -35,4 +35,12 @@ public record SweetAlertMsgDTO (
                 .build();
     }
 
+    public static SweetAlertMsgDTO warn(String title, String text){
+        return SweetAlertMsgDTO.builder()
+                .result(0)
+                .icon("warning")
+                .title(title)
+                .text(text)
+                .build();
+    }
 }

@@ -10,6 +10,7 @@ import kopo.gagyeview.service.IUserInfoService;
 import kopo.gagyeview.util.CmmUtil;
 import kopo.gagyeview.util.EncryptUtil;
 import kopo.gagyeview.validation.OnCheckUserId;
+import kopo.gagyeview.validation.OnLogin;
 import kopo.gagyeview.validation.OnRegister;
 import kopo.gagyeview.validation.OnSendEmail;
 import lombok.RequiredArgsConstructor;
@@ -38,14 +39,26 @@ public class UserInfoController {
     public String userRegForm() {
         log.info("{}.userRegForm", this.getClass().getName());
 
-        return "/user/userRegForm";
+        return "register";
     }
 
-    @GetMapping(value = "/loginForm")
-    public String loginForm() {
+    @GetMapping(value = "/login")
+    public String loginForm(HttpSession session) {
         log.info("{}.loginForm", this.getClass().getName());
 
-        return "/user/loginForm";
+        // 세션에서 사용자 아이디 가져오기
+        String userId = (String) session.getAttribute("SS_USER_ID");
+
+        log.info("userId : {}", userId);
+        // 이미 로그인된 경우 메인 페이지로 리다이렉트
+        if (userId != null) {
+            log.info("이미 로그인된 사용자입니다. index 페이지로 리다이렉트");
+            return "redirect:/";
+        }
+
+
+
+        return "login";
     }
 
     @GetMapping(value = "/findId")
@@ -72,6 +85,19 @@ public class UserInfoController {
         return "/user/myPage";
     }
 
+    @GetMapping(value="/logout")
+    public String logout(HttpSession session) {
+
+        log.info("{}.logout Start!", this.getClass().getName());
+
+        // 전체 세션 무효화(모든 값 제거)
+        session.invalidate();
+        log.info("세션 무효화됨, 로그아웃 완료");
+        log.info("{}.logout End!", this.getClass().getName());
+
+        return "redirect:/";
+    }
+
     /**
      * 회원 가입 전 아이디 중복체크하기( AJAX를 통해 입력한 아이디 정보 받음)
      */
@@ -89,7 +115,7 @@ public class UserInfoController {
         }
 
         // 회원 아이디
-        String userId = CmmUtil.nvl(pDTO.userId());
+        String userId = CmmUtil.nvl(pDTO.getUserId());
 
         log.info("{}.userId received: {}", this.getClass().getName(), userId);
 
@@ -115,6 +141,7 @@ public class UserInfoController {
         );
     }
 
+
     /**
      * 회원 가입 전 이메일 중복체크하기 (Ajax를 통해 입력한 아이디 정보 받음)
      * 유효한 이메일인지 확인하기 위해 입력된 이메일에 인증번호 포함하여 메일 발송
@@ -134,13 +161,16 @@ public class UserInfoController {
         }
 
         // 2.  이메일 암호화
-        String email = CmmUtil.nvl(pDTO.userEmail()); // 회원 이메일
-        String encryptEmail = EncryptUtil.encAES128CBC(pDTO.userEmail()); // 암호화된 회원이메일
+        String email = CmmUtil.nvl(pDTO.getUserEmail()); // 회원 이메일
+        String encryptEmail = EncryptUtil.encAES128CBC(pDTO.getUserEmail()); // 암호화된 회원이메일
+        String authNumber = pDTO.getAuthNumber();
         log.info("email: {}", email);
         log.info("encryptEmail: {}", encryptEmail);
+        log.info("authNumber: {}", pDTO.getAuthNumber());
 
         UserInfoDTO eDTO = UserInfoDTO.builder()
                 .userEmail(encryptEmail)
+                .authNumber(authNumber)
                 .build();
 
         // 이메일 존재 여부 확인
@@ -159,22 +189,23 @@ public class UserInfoController {
             );
         }
 
-        if (rDTO.getAuthNumber() != null) {
-            HttpSession session = request.getSession();
-            Long sentTime = (Long) session.getAttribute("authSentTime");
-
-            if (sentTime != null && System.currentTimeMillis() - sentTime > 5 * 60 * 1000) {
-                session.removeAttribute("authNumber");
-                session.removeAttribute("authSentTime");
-                log.info("Expired authNumber removed from session.");
-            }
-
-            session.setAttribute("authEmail", email);
-            session.setAttribute("authNumber", rDTO.getAuthNumber());
-            session.setAttribute("authSentTime", System.currentTimeMillis());
-            log.info("New authNumber saved to session: {}", rDTO.getAuthNumber());
-
-        }
+        userInfoService.saveAuthToSession(request.getSession(), eDTO);
+//        if (rDTO.getAuthNumber() != null) {
+//            HttpSession session = request.getSession();
+//            Long sentTime = (Long) session.getAttribute("authSentTime");
+//
+//            if (sentTime != null && System.currentTimeMillis() - sentTime > 5 * 60 * 1000) {
+//                session.removeAttribute("authNumber");
+//                session.removeAttribute("authSentTime");
+//                log.info("Expired authNumber removed from session.");
+//            }
+//
+//            session.setAttribute("authEmail", email);
+//            session.setAttribute("authNumber", rDTO.getAuthNumber());
+//            session.setAttribute("authSentTime", System.currentTimeMillis());
+//            log.info("New authNumber saved to session: {}", rDTO.getAuthNumber());
+//
+//        }
 
         log.info("{}.getEmailExists End!", this.getClass().getName());
 
@@ -214,10 +245,10 @@ public class UserInfoController {
              * 웹(회원 정보 입력화면)에서 받는 정보를  String 변수에 저장 시작
              * 무조건 웹으로 받은 정보는 DTO에 저장하기 위해 임시로 String 변수에 저장함
              */
-            String userId = CmmUtil.nvl(pDTO.userId());
-            String userName = CmmUtil.nvl(pDTO.userName());
-            String userEmail = CmmUtil.nvl(pDTO.userEmail());
-            String userPw = CmmUtil.nvl(pDTO.userPw());
+            String userId = CmmUtil.nvl(pDTO.getUserId());
+            String userName = CmmUtil.nvl(pDTO.getUserName());
+            String userEmail = CmmUtil.nvl(pDTO.getUserEmail());
+            String userPw = CmmUtil.nvl(pDTO.getUserPw());
 
 
             log.info("userId: {}", userId);
@@ -228,7 +259,7 @@ public class UserInfoController {
 
             // 이메일 인증 체크
             HttpSession session = request.getSession();
-            String inputAuthCode = CmmUtil.nvl(pDTO.authNumber());
+            String inputAuthCode = CmmUtil.nvl(pDTO.getAuthNumber());
             Integer savedCode = (Integer) session.getAttribute("authNumber");
             String savedEmail = (String) session.getAttribute("authEmail");
 
@@ -324,5 +355,91 @@ public class UserInfoController {
         return response;
     }
 
+    /**
+     * 로그인 처리 및 결과 알려주는 화면으로 이동
+     */
+    @ResponseBody
+    @PostMapping(value="loginProc")
+    public ResponseEntity<? extends CommonResponse<?>> loginProc(
+            @Validated(OnLogin.class) @RequestBody UserInfoDTO pDTO,
+            BindingResult bindingResult, HttpServletRequest request, HttpSession session) throws Exception {
+
+        log.info("{}.loginProc Start!", this.getClass().getName());
+
+        // 유효성 검사
+        if (bindingResult.hasErrors()) {
+            return CommonResponse.getFirstErrorAlert(bindingResult);
+        }
+
+        // 로그인 처리 결과를 저장할 변수들
+        int result = 0;
+        String samIcon = "";
+        String samTitle = "";
+        String samText = "";
+        SweetAlertMsgDTO samDTO;
+        ResponseEntity<? extends CommonResponse<?>> response;
+
+        try {
+
+            // 웹에서 받은 회원 아이디와 비밀번호
+            String userId = CmmUtil.nvl(pDTO.getUserId());
+            String userPw = CmmUtil.nvl(pDTO.getUserPw());
+
+            log.info("{}.received login attempt for userId: {}", this.getClass().getName(), userId);
+
+            // 비밀번호는 절대로 복호화되지 않도록 해시 알고리즘으로 암호화함
+            pDTO.setUserPw(EncryptUtil.encHashSHA256(userPw));
+
+            // 로그인을 위해 아이디와 비밀번호가 일치하는지 확인하기 위한 userInfoService 호출하기
+            UserInfoDTO rDTO = userInfoService.getLogin(pDTO);
+            String userName = rDTO.getUserName();
+
+            if (!CmmUtil.nvl(rDTO.getUserId()).isEmpty()) { // 로그인 성공
+
+                samTitle = "환영합니다";
+                samText = userName + "님, 로그인에 성공하셨습니다.";
+                samDTO = SweetAlertMsgDTO.success(samTitle, samText);
+
+                response = ResponseEntity.ok(CommonResponse.of(
+                        HttpStatus.OK, "success", samDTO
+                ));
+
+                session.setAttribute("SS_USER_ID", userId);
+                session.setAttribute("SS_USER_NAME", rDTO.getUserName());
+
+
+            } else {
+
+                samTitle = "로그인 실패";
+                samText = "아이디와 비밀번호가 일치하지 않습니다.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+
+                response = ResponseEntity.ok(CommonResponse.of(
+                        HttpStatus.OK, "fail", samDTO
+                ));
+            }
+        } catch (Exception e){
+
+            //로그인이 실패되면 사용자에게 보여줄 메시지
+            samTitle = "시스템 오류";
+            samText = "로그인 처리 중 오류가 발생했습니다.";
+            samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+            response = ResponseEntity.ok(CommonResponse.of(
+                    HttpStatus.INTERNAL_SERVER_ERROR, "fail", samDTO
+            ));
+
+            log.info("{}.loginProc Error", this.getClass().getName(), e);
+        } finally {
+            log.info("samTitle: {} samText: {}", samTitle, samText);
+            log.info("{}.loginProc End!", this.getClass().getName());
+        }
+
+        return response;
+
+    }
+
+
+
 
 }
+

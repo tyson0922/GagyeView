@@ -38,7 +38,7 @@
             <div class="col-lg-12">
                 <nav class="navbar navbar-expand-lg align-items-center justify-content-between">
                     <!-- Logo (fixed width) -->
-                    <a class="navbar-brand" href="javascript:void(0)">
+                    <a class="navbar-brand" href="/">
                         <h1 class="navbar-logo-text">가계뷰</h1>
                     </a>
 
@@ -61,13 +61,13 @@
                     <div class="collapse navbar-collapse justify-content-center" id="navbarOne">
                         <ul class="navbar-nav">
                             <li class="nav-item">
-                                <a href="javascript:void(0)">소비 분석</a>
+                                <a href="/finance/">소비 분석</a>
                             </li>
                             <li class="nav-item">
-                                <a href="javascript:void(0)">영수증 등록</a>
+                                <a href="/receipt/">영수증 등록</a>
                             </li>
                             <li class="nav-item">
-                                <a href="javascript:void(0)">마트 안내</a>
+                                <a href="/map/">마트 안내</a>
                             </li>
                         </ul>
                     </div>
@@ -99,7 +99,7 @@
 
                             <!-- Not logged in -->
                             <li th:unless="${session.SS_USER_ID != null}">
-                                <a class="btn primary-btn-outline" href="user/loginForm">로그인</a>
+                                <a class="btn primary-btn-outline" href="/user/loginForm">로그인</a>
                             </li>
                             <li th:unless="${session.SS_USER_ID != null}">
                                 <a class="btn primary-btn" href="/user/userRegForm">회원가입</a>
