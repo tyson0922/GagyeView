@@ -35,16 +35,16 @@ public class UserInfoController {
     /**
      * 회원가입 화면으로 이동
      */
-    @GetMapping(value = "/userRegForm")
-    public String userRegForm() {
-        log.info("{}.userRegForm", this.getClass().getName());
+    @GetMapping(value = "/signUp")
+    public String signUp() {
+        log.info("{}.signUp", this.getClass().getName());
 
-        return "register";
+        return "/user/signUp";
     }
 
     @GetMapping(value = "/login")
-    public String loginForm(HttpSession session) {
-        log.info("{}.loginForm", this.getClass().getName());
+    public String login(HttpSession session) {
+        log.info("{}.login", this.getClass().getName());
 
         // 세션에서 사용자 아이디 가져오기
         String userId = (String) session.getAttribute("SS_USER_ID");
@@ -56,9 +56,7 @@ public class UserInfoController {
             return "redirect:/";
         }
 
-
-
-        return "login";
+        return "/user/login";
     }
 
     @GetMapping(value = "/findId")
@@ -163,14 +161,11 @@ public class UserInfoController {
         // 2.  이메일 암호화
         String email = CmmUtil.nvl(pDTO.getUserEmail()); // 회원 이메일
         String encryptEmail = EncryptUtil.encAES128CBC(pDTO.getUserEmail()); // 암호화된 회원이메일
-        String authNumber = pDTO.getAuthNumber();
         log.info("email: {}", email);
         log.info("encryptEmail: {}", encryptEmail);
-        log.info("authNumber: {}", pDTO.getAuthNumber());
 
         UserInfoDTO eDTO = UserInfoDTO.builder()
                 .userEmail(encryptEmail)
-                .authNumber(authNumber)
                 .build();
 
         // 이메일 존재 여부 확인
@@ -189,23 +184,22 @@ public class UserInfoController {
             );
         }
 
-        userInfoService.saveAuthToSession(request.getSession(), eDTO);
-//        if (rDTO.getAuthNumber() != null) {
-//            HttpSession session = request.getSession();
-//            Long sentTime = (Long) session.getAttribute("authSentTime");
-//
-//            if (sentTime != null && System.currentTimeMillis() - sentTime > 5 * 60 * 1000) {
-//                session.removeAttribute("authNumber");
-//                session.removeAttribute("authSentTime");
-//                log.info("Expired authNumber removed from session.");
-//            }
-//
-//            session.setAttribute("authEmail", email);
-//            session.setAttribute("authNumber", rDTO.getAuthNumber());
-//            session.setAttribute("authSentTime", System.currentTimeMillis());
-//            log.info("New authNumber saved to session: {}", rDTO.getAuthNumber());
-//
-//        }
+        if (rDTO.getAuthNumber() != null) {
+            HttpSession session = request.getSession();
+            Long sentTime = (Long) session.getAttribute("authSentTime");
+
+            if (sentTime != null && System.currentTimeMillis() - sentTime > 5 * 60 * 1000) {
+                session.removeAttribute("authNumber");
+                session.removeAttribute("authSentTime");
+                log.info("Expired authNumber removed from session.");
+            }
+
+            session.setAttribute("authEmail", email);
+            session.setAttribute("authNumber", rDTO.getAuthNumber());
+            session.setAttribute("authSentTime", System.currentTimeMillis());
+            log.info("New authNumber saved to session: {}", rDTO.getAuthNumber());
+
+        }
 
         log.info("{}.getEmailExists End!", this.getClass().getName());
 

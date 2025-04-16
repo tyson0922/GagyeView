@@ -93,10 +93,10 @@
 
                             <!-- Not logged in -->
                             <li th:unless="${session.SS_USER_ID != null}">
-                                <a class="btn primary-btn-outline" href="/user/loginForm">로그인</a>
+                                <a class="btn primary-btn-outline" href="/user/login">로그인</a>
                             </li>
                             <li th:unless="${session.SS_USER_ID != null}">
-                                <a class="btn primary-btn" href="/user/userRegForm">회원가입</a>
+                                <a class="btn primary-btn" href="/user/signUp">회원가입</a>
                             </li>
                         </ul>
                     </div>

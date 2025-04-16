@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="/css/components/main-section.css"/>
     <!--    card section css-->
     <link rel="stylesheet" href="/css/components/singleCard.css"/>
-    <!--    loginForm css-->
+    <!--    buttonAndInput css-->
     <link rel="stylesheet" href="/css/components/buttonAndInput.css"/>
 
     <link rel="stylesheet" href="/css/alert/customToastStyle.css">
@@ -113,10 +113,10 @@
 
                             <!-- Not logged in -->
                             <li th:unless="${session.SS_USER_ID != null}">
-                                <a class="btn primary-btn-outline" href="/user/loginForm">로그인</a>
+                                <a class="btn primary-btn-outline" href="/user/login">로그인</a>
                             </li>
                             <li th:unless="${session.SS_USER_ID != null}">
-                                <a class="btn primary-btn" href="/user/userRegForm">회원가입</a>
+                                <a class="btn primary-btn" href="/user/signUp">회원가입</a>
                             </li>
                         </ul>
                     </div>
@@ -197,7 +197,7 @@
                         <div class="d-flex button-full-row">
                             <ul class="d-flex flex-wrap w-100 mt-3">
                                 <li class="full-button-item w-100">
-                                    <a href="/user/userRegForm" class="btn caution-btn-outline btn-sm w-100">회원가입</a>
+                                    <a href="/user/signUp" class="btn caution-btn-outline btn-sm w-100">회원가입</a>
                                 </li>
                             </ul>
                         </div>

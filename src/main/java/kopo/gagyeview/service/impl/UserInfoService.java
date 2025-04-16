@@ -1,6 +1,5 @@
 package kopo.gagyeview.service.impl;
 
-import jakarta.servlet.http.HttpSession;
 import kopo.gagyeview.dto.ExistsYnDTO;
 import kopo.gagyeview.dto.MailDTO;
 import kopo.gagyeview.dto.UserInfoDTO;
@@ -47,6 +46,7 @@ public class UserInfoService implements IUserInfoService {
 
         log.info("rDTO: {}", rDTO);
 
+
         if (CmmUtil.nvl(rDTO.getExistsYn()).equals("N")) {
 
             // 6자리 랜덤 숫자 생성하기 (Integer because of Validation check)
@@ -64,34 +64,13 @@ public class UserInfoService implements IUserInfoService {
             mailService.sendMail(mDTO);
 
             mDTO = null;
+
             rDTO.setAuthNumber(authNumber);
         }
 
         log.info("{}.getUserEmailExists End!", this.getClass().getName());
 
         return rDTO;
-    }
-
-    @Override
-    public void saveAuthToSession(HttpSession session, UserInfoDTO pDTO) throws Exception {
-
-        String rawEmail = CmmUtil.nvl(pDTO.getUserEmail());
-        Integer authNumber = Integer.parseInt(Optional.ofNullable(pDTO.getAuthNumber()).orElse("0"));
-
-        Long sentTime = (Long) session.getAttribute("authSentTime");
-
-        if (sentTime != null && System.currentTimeMillis() - sentTime  > 5 * 60 * 1000){
-            session.removeAttribute("authNumber");
-            session.removeAttribute("authSentTime");
-            log.info("Expired authNumber: {}", authNumber);
-        }
-
-        session.setAttribute("authEmail", rawEmail);
-        session.setAttribute("authNumber", authNumber);
-        session.setAttribute("authSentTime", System.currentTimeMillis());
-
-        log.info("New authNumber saved to session: {}", authNumber);
-
     }
 
 
@@ -108,7 +87,7 @@ public class UserInfoService implements IUserInfoService {
         log.info("rowNumInserted: {}", rowNumInserted);
 
         // db에 데이터가 등록되었다면(회원가입 성공했다면...)
-        if (rowNumInserted > 0) {
+        if (rowNumInserted > 0){
             res = 1;
 
             // 회원가입 축하 메일 발송, 회원정보화면에서 입력받은 이메일 변수(아직 암호화되어 넘어오기 때문에 복호화 수행함
@@ -158,7 +137,7 @@ public class UserInfoService implements IUserInfoService {
                     .toMail(EncryptUtil.decAES128CBC(CmmUtil.nvl(rDTO.getUserEmail())))
                     .title("로그인 알립!")
                     .text(DateUtil.getDateTime("yyyy.MM.dd hh:mm:ss") + "에 "
-                    + CmmUtil.nvl(rDTO.getUserName()) + "님이 로그인하였습니다.")
+                            + CmmUtil.nvl(rDTO.getUserName()) + "님이 로그인하였습니다.")
                     .build();
 
             // 메일 발송
