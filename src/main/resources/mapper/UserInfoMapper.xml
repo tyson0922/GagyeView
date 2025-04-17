@@ -51,7 +51,7 @@
     1. 이름과 이메일이 맞다면, 아이디 알려주기
     2. 아이디, 이름과 이메일이 맞다면, 비밀번호 재설정하기
     -->
-    <select id="getUserId" parameterType="UserInfoDTO" resultType="UserInfoDTO">
+    <select id="getUserIdOrPw" parameterType="UserInfoDTO" resultType="UserInfoDTO">
         SELECT
             USER_ID,
             USER_NAME,
@@ -64,4 +64,13 @@
         AND USER_NAME = #{userName}
         AND USER_EMAIL = #{userEmail}
     </select>
+
+    <!-- 비밀번호 재설정 -->
+    <update id="updatePassword" parameterType="UserInfoDTO">
+        UPDATE USER_INFO
+        SET USER_PW = #{userPw}
+        WHERE USER_ID = #{userId}
+    </update>
+
+
 </mapper>

@@ -73,6 +73,8 @@ function emailExists(form) {
         success: function (json) {
             if (json.data) {
                 showPresetToast(json.data.icon, json.data.title, json.data.text);
+            } else {
+                showPresetToast("error", "오류", "서버 응답이 올바르지 않습니다");
             }
         }
     });

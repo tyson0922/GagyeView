@@ -19,7 +19,8 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class UserInfoService implements IUserInfoService {
+public class
+UserInfoService implements IUserInfoService {
 
     private final IUserInfoMapper userInfoMapper; // 회원관련 SQL 사용하기 위한  Mapper 가져오기
 
@@ -150,18 +151,57 @@ public class UserInfoService implements IUserInfoService {
     }
 
     @Override
-    public UserInfoDTO getUserId(UserInfoDTO pDTO) throws Exception {
+    public UserInfoDTO getUserIdOrPw(UserInfoDTO pDTO) throws Exception {
 
 
         log.info("{}.getUserId Start!", this.getClass().getName());
 
-        UserInfoDTO rDTO = userInfoMapper.getUserId(pDTO);
+        UserInfoDTO rDTO = userInfoMapper.getUserIdOrPw(pDTO);
 
         log.info("rDTO: {}", rDTO);
 
         log.info("{}.getUserId End!", this.getClass().getName());
 
         return rDTO;
+    }
+
+    @Override
+    public UserInfoDTO sendAuthCode(UserInfoDTO pDTO) throws Exception {
+
+        String rawEmail = CmmUtil.nvl(EncryptUtil.decAES128CBC(pDTO.getUserEmail()));
+        Integer authNumber = ThreadLocalRandom.current().nextInt(100000, 1000000);
+        log.info("authNumber: {}.", authNumber);
+
+        // 세션값에 이메일, 인증번호 저장하기 위해 controller에 다시 필요한 정보 전달
+        UserInfoDTO rDTO = UserInfoDTO.builder()
+                .userEmail(rawEmail)
+                .authNumber(authNumber.toString())
+                .userId(pDTO.getUserId())
+                .build();
+
+        // 인증 메일 발송
+        MailDTO mDTO = MailDTO.builder()
+                .title("인증번호 안내")
+                .text("인증번호는 " + authNumber + "입니다.")
+                .toMail(rawEmail)
+                .build();
+        mailService.sendMail(mDTO);
+
+        return rDTO;
+    }
+
+    @Override
+    public int newPwProc(UserInfoDTO pDTO) throws Exception {
+
+        log.info("{}.newPwProc Start!", this.getClass().getName());
+
+        // 비밀번호 재설정
+        pDTO.setUserPw(EncryptUtil.encHashSHA256(pDTO.getUserPw()));
+        int success = userInfoMapper.updatePassword(pDTO);
+
+        log.info("{}.newProc End!", this.getClass().getName());
+
+        return success;
     }
 
 

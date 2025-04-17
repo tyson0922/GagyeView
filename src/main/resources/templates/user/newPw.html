@@ -42,7 +42,7 @@
 
     <script type="text/javascript" src="/js/alert/showPresetToast.js"></script>
     <!-- signUp.js -->
-    <script type="text/javascript" src="/js/pages/signUp.js"></script>
+    <script type="text/javascript" src="/js/pages/newPw.js"></script>
 
     <title>비밀번호 생성</title>
 </head>
@@ -140,14 +140,14 @@
                 <div class="card-content text-center">
                     <h1 class="title">새로운 비밀번호 생성</h1>
 
-                    <div class="form-style form-style-five">
+                    <form id="form" class="form-style form-style-five">
 
                         <div class="d-flex gap-3 input-row">
                             <!-- password input -->
                             <div class="form-input mt-3">
                                 <label>새로운 비밀번호</label>
                                 <div class="input-items default">
-                                    <input type="password" placeholder="Password"/>
+                                    <input name="userPw" type="password" placeholder="Password"/>
                                     <iconify-icon icon="material-symbols:key-vertical-outline"
                                                   class="input-icon"></iconify-icon>
                                 </div>
@@ -159,7 +159,7 @@
                             <div class="form-input mt-3">
                                 <label>비밀번호 확인</label>
                                 <div class="input-items default">
-                                    <input type="password" placeholder="Password"/>
+                                    <input name="userPw2" type="password" placeholder="Password"/>
                                     <iconify-icon icon="material-symbols:key-vertical-outline"
                                                   class="input-icon"></iconify-icon>
                                 </div>
@@ -169,13 +169,13 @@
                         <div class="d-flex button-full-row">
                             <ul class="d-flex flex-wrap mt-3 w-100">
                                 <li class="full-button-item w-100">
-                                    <a href="javascript:void(0)" class="btn caution-btn btn-sm w-100">비밀번호 생성</a>
+                                    <button id="nwPwBtn" type="button" class="btn caution-btn btn-sm w-100">비밀번호 생성</button>
                                 </li>
                             </ul>
                         </div>
 
 
-                    </div>
+                    </form>
                 </div>
 
             </div>

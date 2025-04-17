@@ -18,7 +18,11 @@ public interface IUserInfoService {
     UserInfoDTO getLogin(UserInfoDTO pDTO) throws Exception;
 
     // 아이디, 비밀번호 찾기에 활용
-    UserInfoDTO getUserId(UserInfoDTO pDTO) throws Exception;
+    UserInfoDTO getUserIdOrPw(UserInfoDTO pDTO) throws Exception;
 
+    // 아이디 찾기 성공후 인증 이메일 보내기
+    UserInfoDTO sendAuthCode(UserInfoDTO pDTO) throws Exception;
 
+    // 비밀번호 재설정
+    int newPwProc(UserInfoDTO pDTO) throws Exception;
 }

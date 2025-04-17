@@ -24,5 +24,8 @@ public interface IUserInfoMapper {
      * 1. 이름과 이메일이 맞다면, 아이디 알려주기
      * 2. 아이디, 이름과, 이메일이 맞다면, 비밀번호 재설정하기
      */
-    UserInfoDTO getUserId(UserInfoDTO pDTO) throws Exception;
+    UserInfoDTO getUserIdOrPw(UserInfoDTO pDTO) throws Exception;
+
+    // 비밀번호 재설정
+    int updatePassword(UserInfoDTO pDTO) throws Exception;
 }

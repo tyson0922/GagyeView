@@ -1,6 +1,5 @@
 package kopo.gagyeview.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import kopo.gagyeview.controller.response.CommonResponse;
 import kopo.gagyeview.dto.ExistsYnDTO;
@@ -9,10 +8,7 @@ import kopo.gagyeview.dto.UserInfoDTO;
 import kopo.gagyeview.service.IUserInfoService;
 import kopo.gagyeview.util.CmmUtil;
 import kopo.gagyeview.util.EncryptUtil;
-import kopo.gagyeview.validation.OnCheckUserId;
-import kopo.gagyeview.validation.OnLogin;
-import kopo.gagyeview.validation.OnRegister;
-import kopo.gagyeview.validation.OnSendEmail;
+import kopo.gagyeview.validation.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -71,11 +67,6 @@ public class UserInfoController {
         return "/user/findPw";
     }
 
-    @GetMapping(value = "/newPw")
-    public String newPw() {
-        log.info("{}.newPw", this.getClass().getName());
-        return "/user/newPw";
-    }
 
     @GetMapping(value = "/myPage")
     public String myPage() {
@@ -83,7 +74,37 @@ public class UserInfoController {
         return "/user/myPage";
     }
 
-    @GetMapping(value="/logout")
+    @GetMapping(value = "/newPw")
+    public String newPw(HttpSession session) {
+        log.info("{}.newPw Start!", this.getClass().getName());
+
+        String findPwUserId = (String) session.getAttribute("findPwUserId");
+        log.info("findPwUserId: {}", findPwUserId);
+
+        if (findPwUserId == null || findPwUserId.isEmpty()) {
+            return "redirect:/user/findPw";
+        }
+
+        log.info("{}.findPw End!", this.getClass().getName());
+        return "/user/newPw";
+    }
+
+    @GetMapping(value="/verifyWithPw")
+    String verifWithPw(HttpSession session) {
+        log.info("{}.verifWithPw Start!", this.getClass().getName());
+
+        String sessionUserId = (String) session.getAttribute("SS_USER_ID");
+        log.info("sessionUserId : {}", sessionUserId);
+
+        if (sessionUserId == null || sessionUserId.isEmpty()) {
+            return "redirect:/";
+        }
+
+        log.info("{}.verifWithPw End!", this.getClass().getName());
+        return "/user/verifyWithPw";
+    }
+
+    @GetMapping(value = "/logout")
     public String logout(HttpSession session) {
 
         log.info("{}.logout Start!", this.getClass().getName());
@@ -149,7 +170,7 @@ public class UserInfoController {
     public ResponseEntity<? extends CommonResponse<?>> getEmailExists(
             @Validated(OnSendEmail.class) @RequestBody UserInfoDTO pDTO,
             BindingResult bindingResult,
-            HttpServletRequest request) throws Exception {
+            HttpSession session) throws Exception {
 
         log.info("{}.getEmailExists Start!", this.getClass().getName());
 
@@ -185,7 +206,7 @@ public class UserInfoController {
         }
 
         if (rDTO.getAuthNumber() != null) {
-            HttpSession session = request.getSession();
+//            HttpSession session = request.getSession();
             Long sentTime = (Long) session.getAttribute("authSentTime");
 
             if (sentTime != null && System.currentTimeMillis() - sentTime > 5 * 60 * 1000) {
@@ -216,7 +237,7 @@ public class UserInfoController {
     @PostMapping(value = "insertUserInfo")
     public ResponseEntity<? extends CommonResponse<?>> insertUserInfo(
             @Validated(OnRegister.class) @RequestBody UserInfoDTO pDTO,
-            BindingResult bindingResult, HttpServletRequest request) throws Exception {
+            BindingResult bindingResult, HttpSession session) throws Exception {
 
         log.info("{}.insertUserInfo Start!", this.getClass().getName());
 
@@ -252,7 +273,6 @@ public class UserInfoController {
 
 
             // 이메일 인증 체크
-            HttpSession session = request.getSession();
             String inputAuthCode = CmmUtil.nvl(pDTO.getAuthNumber());
             Integer savedCode = (Integer) session.getAttribute("authNumber");
             String savedEmail = (String) session.getAttribute("authEmail");
@@ -353,10 +373,10 @@ public class UserInfoController {
      * 로그인 처리 및 결과 알려주는 화면으로 이동
      */
     @ResponseBody
-    @PostMapping(value="loginProc")
+    @PostMapping(value = "loginProc")
     public ResponseEntity<? extends CommonResponse<?>> loginProc(
             @Validated(OnLogin.class) @RequestBody UserInfoDTO pDTO,
-            BindingResult bindingResult, HttpServletRequest request, HttpSession session) throws Exception {
+            BindingResult bindingResult, HttpSession session) throws Exception {
 
         log.info("{}.loginProc Start!", this.getClass().getName());
 
@@ -366,8 +386,6 @@ public class UserInfoController {
         }
 
         // 로그인 처리 결과를 저장할 변수들
-        int result = 0;
-        String samIcon = "";
         String samTitle = "";
         String samText = "";
         SweetAlertMsgDTO samDTO;
@@ -405,14 +423,14 @@ public class UserInfoController {
             } else {
 
                 samTitle = "로그인 실패";
-                samText = "아이디와 비밀번호가 일치하지 않습니다.";
+                samText = "아이디 또는 비밀번호가 올바르지 않습니다.";
                 samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
 
                 response = ResponseEntity.ok(CommonResponse.of(
                         HttpStatus.OK, "fail", samDTO
                 ));
             }
-        } catch (Exception e){
+        } catch (Exception e) {
 
             //로그인이 실패되면 사용자에게 보여줄 메시지
             samTitle = "시스템 오류";
@@ -432,7 +450,266 @@ public class UserInfoController {
 
     }
 
+    @ResponseBody
+    @PostMapping(value = "findUserIdOrPwProc")
+    public ResponseEntity<? extends CommonResponse<?>> findUserIdProc(
+            @Validated(OnVerifyAuth.class) @RequestBody UserInfoDTO pDTO,
+            BindingResult bindingResult, HttpSession session) throws Exception {
 
+        log.info("{}.findUserIdProc Start!", this.getClass().getName());
+
+        if (bindingResult.hasErrors()) {
+            return CommonResponse.getFirstErrorAlert(bindingResult);
+        }
+
+        // 아이디 찾기 결과를 저장할 변수들
+        String samTitle = "";
+        String samText = "";
+        SweetAlertMsgDTO samDTO;
+        ResponseEntity<? extends CommonResponse<?>> response;
+
+        pDTO.setUserEmail(EncryptUtil.encAES128CBC(pDTO.getUserEmail()));
+
+        UserInfoDTO rDTO = Optional.ofNullable(userInfoService.getUserIdOrPw(pDTO))
+                .orElseGet(UserInfoDTO::new);
+        log.info("rDTO: {}", rDTO);
+
+        if (!CmmUtil.nvl(rDTO.getUserId()).isEmpty()) { // 아이디 존재 성공시 인증번호 보냄
+
+            rDTO = Optional.ofNullable(userInfoService.sendAuthCode(rDTO))
+                    .orElseGet(UserInfoDTO::new);
+
+            Long sentTime = (Long) session.getAttribute("authSentTime");
+
+            if (sentTime != null && System.currentTimeMillis() - sentTime > 5 * 60 * 1000) {
+                session.removeAttribute("authNumber");
+                session.removeAttribute("authSentTime");
+                session.removeAttribute("findPwUserId");
+                log.info("Expired authNumber removed from session.");
+            }
+
+            session.setAttribute("authNumber", rDTO.getAuthNumber());
+            session.setAttribute("authEmail", rDTO.getUserEmail());
+            session.setAttribute("findPwUserId", rDTO.getUserId());
+            log.info("authNumber: {} / authEmail: {}", rDTO.getAuthNumber(), rDTO.getUserEmail());
+            log.info("findPwUserId : {}", rDTO.getUserId());
+
+            samTitle = "메일 확인";
+            samText = "해당 이메일로 인증번호가 전송됩니다.";
+            samDTO = SweetAlertMsgDTO.success(samTitle, samText);
+
+            response = ResponseEntity.ok(CommonResponse.of(
+                    HttpStatus.OK, "success", samDTO
+            ));
+
+        } else {
+
+            samTitle = "찾기 실패";
+            samText = "아이디 또는 이메일이 올바르지 않습니다";
+            samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+
+            response = ResponseEntity.ok(CommonResponse.of(
+                    HttpStatus.OK, "fail", samDTO
+            ));
+
+        }
+
+        return response;
+
+    }
+
+    @ResponseBody
+    @PostMapping(value = "findUserIdResult")
+    public ResponseEntity<? extends CommonResponse<?>> findUserIdResult(
+            @Validated(OnFindIdOrPw.class) @RequestBody UserInfoDTO pDTO,
+            BindingResult bindingResult, HttpSession session) throws Exception {
+
+        log.info("{}.findUserIdResult Start!", this.getClass().getName());
+
+        if (bindingResult.hasErrors()) {
+            return CommonResponse.getFirstErrorAlert(bindingResult);
+        }
+
+        // 아이디 찾기 결과를 저장할 변수들
+        String samTitle = "";
+        String samText = "";
+        SweetAlertMsgDTO samDTO;
+        ResponseEntity<? extends CommonResponse<?>> response;
+
+        String rawEmail = CmmUtil.nvl(pDTO.getUserEmail());
+        String authNumber = CmmUtil.nvl(pDTO.getAuthNumber());
+        String sesAuthEmail = (String) session.getAttribute("authEmail");
+        String sesAuthNumber = (String) session.getAttribute("authNumber");
+
+        log.info("rawEmail: {} / authNumber: {}", rawEmail, authNumber);
+        log.info("sesAuthEmail: {} / sesAuthNumber: {}", sesAuthEmail, sesAuthNumber);
+
+
+        if (rawEmail.equals(sesAuthEmail) && authNumber.equals(sesAuthNumber)) {
+
+            // 인증번호로 인증 성공
+
+            //세션값 제거
+
+            session.removeAttribute("authNumber");
+            session.removeAttribute("authEmail");
+
+            // 이메일은 확인할때 DB는 암호화 되어있어서, 다시 암호화해서 조회
+            pDTO.setUserEmail(EncryptUtil.encAES128CBC(pDTO.getUserEmail()));
+
+            UserInfoDTO rDTO = Optional.ofNullable(userInfoService.getUserIdOrPw(pDTO))
+                    .orElseGet(UserInfoDTO::new);
+            log.info("rDTO: {}", rDTO);
+
+            samTitle = "아이디 결과";
+            samText = rDTO.getUserName() + "님의 아이디는 " + rDTO.getUserId() + "입니다.";
+            samDTO = SweetAlertMsgDTO.success(samTitle, samText);
+
+            response = ResponseEntity.ok(CommonResponse.of(
+                    HttpStatus.OK, "success", samDTO
+            ));
+
+        } else {
+
+            // 인증번호로 인증 실패
+            samTitle = "인증실패";
+            samText = "인증번호가 틀렸습니다";
+            samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+
+            response = ResponseEntity.ok(CommonResponse.of(
+                    HttpStatus.OK, "fail", samDTO
+            ));
+        }
+
+        return response;
+
+    }
+
+
+
+    @ResponseBody
+    @PostMapping(value = "verifyAuthCodeOnly")
+    public ResponseEntity<? extends CommonResponse<?>> verifyAuthCodeOnly(
+            @Validated(OnFindIdOrPw.class) @RequestBody UserInfoDTO pDTO,
+            BindingResult bindingResult, HttpSession session) throws Exception {
+        log.info("{}.verifyAuthCodeOnly Start!", this.getClass().getName());
+
+        if (bindingResult.hasErrors()) {
+            return CommonResponse.getFirstErrorAlert(bindingResult);
+        }
+
+        // 아이디 찾기 결과를 저장할 변수들
+        String samTitle = "";
+        String samText = "";
+        SweetAlertMsgDTO samDTO;
+        ResponseEntity<? extends CommonResponse<?>> response;
+
+        String rawEmail = CmmUtil.nvl(pDTO.getUserEmail());
+        String authNumber = CmmUtil.nvl(pDTO.getAuthNumber());
+        String sesAuthEmail = (String) session.getAttribute("authEmail");
+        String sesAuthNumber = (String) session.getAttribute("authNumber");
+
+        log.info("rawEmail: {} / authNumber: {}", rawEmail, authNumber);
+        log.info("sesAuthEmail: {} / sesAuthNumber: {}", sesAuthEmail, sesAuthNumber);
+
+        if (rawEmail.equals(sesAuthEmail) && authNumber.equals(sesAuthNumber)) {
+
+            // 인증번호로 인증 성공
+
+            //세션값 제거
+
+            session.removeAttribute("authNumber");
+            session.removeAttribute("authEmail");
+
+            // 이메일은 확인할때 DB는 암호화 되어있어서, 다시 암호화해서 조회
+            pDTO.setUserEmail(EncryptUtil.encAES128CBC(pDTO.getUserEmail()));
+
+            UserInfoDTO rDTO = Optional.ofNullable(userInfoService.getUserIdOrPw(pDTO))
+                    .orElseGet(UserInfoDTO::new);
+            log.info("rDTO: {}", rDTO);
+
+            response = ResponseEntity.ok(CommonResponse.of(
+                    HttpStatus.OK, "success", "인증에 성공했습니다."
+            ));
+
+        } else {
+
+            // 인증번호로 인증 실패
+            response = ResponseEntity.ok(CommonResponse.of(
+                    HttpStatus.OK, "fail", "인증번호가 틀렸습니다."
+            ));
+
+        }
+
+        return response;
+    }
+
+
+    @ResponseBody
+    @PostMapping(value = "newPwProc")
+    public ResponseEntity<? extends CommonResponse<?>> newUserPw(
+            @Validated(OnNewPw.class) @RequestBody UserInfoDTO pDTO,
+            BindingResult bindingResult, HttpSession session) throws Exception {
+        log.info("{}.newUserPwProc Start!", this.getClass().getName());
+
+        // 유효성 검사
+        if (bindingResult.hasErrors()) {
+            return CommonResponse.getFirstErrorAlert(bindingResult);
+        }
+
+        // 비밀번호 생성 결과를 저장할 변수들
+        String samTitle = "";
+        String samText = "";
+        SweetAlertMsgDTO samDTO;
+        ResponseEntity<? extends CommonResponse<?>> response;
+
+        String findPwUserId = CmmUtil.nvl((String) session.getAttribute("findPwUserId"));
+        String sessionUserId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
+        if (!findPwUserId.isEmpty() || !sessionUserId.isEmpty()) {
+
+            pDTO.setUserId(findPwUserId);
+
+            //세션값 제거
+            session.removeAttribute("findPwUserId");
+            session.removeAttribute("authNumber");
+            session.removeAttribute("authEmail");
+
+            int result = userInfoService.newPwProc(pDTO); // returns 1 if success
+
+            if (result == 1) {
+
+                samTitle = "변경 성공";
+                samText = "비밀번호가 성공적으로 변경되었습니다.";
+                samDTO = SweetAlertMsgDTO.success(samTitle, samText);
+
+                response = ResponseEntity.ok(CommonResponse.of(
+                        HttpStatus.OK, "success", samDTO
+                ));
+            } else {
+
+                samTitle = "변경 실패";
+                samText = "비밀번호 변경 중 오류가 발생했습니다.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+
+                response = ResponseEntity.ok(CommonResponse.of(
+                        HttpStatus.OK, "fail", samDTO
+                ));
+            }
+
+        } else {
+
+            samTitle = "세션 만료";
+            samText = "세션이 만료되었습니다. 이메일 인증을 다시 진행해주세요.";
+            samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+
+            response = ResponseEntity.ok(CommonResponse.of(
+                    HttpStatus.UNAUTHORIZED, "fail", samDTO
+            ));
+
+        }
+
+        return response;
+    }
 
 
 }

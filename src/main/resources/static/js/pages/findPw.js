@@ -1,14 +1,14 @@
-$(document).ready(function () {
+$(document).ready(function (){
     let form = document.getElementById("form");
 
     // 이메일 인증메일 발송
-    $('#emailBtn').on("click", function () {
+    $('#emailBtn').on("click", function(){
         findUserIdOrPwProc(form);
     });
 
     // 아이디 찾기 결과
-    $('#findIdBtn').on("click", function () {
-        findUserIdResult(form);
+    $('#findPwBtn').on("click", function (){
+        verifyAuthCodeOnly(form);
     });
 });
 
@@ -46,7 +46,7 @@ function findUserIdOrPwProc(form) {
     });
 }
 
-function findUserIdResult(form) {
+function verifyAuthCodeOnly(form){
 
     if (form.userName.value === "") {
         showPresetToast("warning", "주의", "아이디를 입력하세요", function () {
@@ -69,16 +69,25 @@ function findUserIdResult(form) {
     }
 
     $.ajax({
-        url: "/user/findUserIdResult",
+        url: "/user/verifyAuthCodeOnly",
         type: "post",
         dataType: "json",
         contentType: "application/json",
         data: JSON.stringify($("#form").serializeObject()),
         success: function (json) {
             if (json.data) {
-                showPresetToast(json.data.icon, json.data.title, json.data.text, function () {
-                    location.href = "/user/login";
-                });
+                // showPresetToast(json.data.icon, json.data.title, json.data.text, function () {
+                //     location.href = "/user/login";
+                // });
+                console.log("message:", json.message);
+                console.log("data:", json.data);
+
+                if (json.message === "success"){
+                    location.href = "/user/newPw";
+                } else {
+                    showPresetToast("error", "인증 실패", json.data);
+                }
+
             } else {
                 showPresetToast("error", "오류", "서버 응답이 올바르지 않습니다");
             }
