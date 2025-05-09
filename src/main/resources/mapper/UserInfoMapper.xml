@@ -44,7 +44,7 @@
         SELECT USER_ID, USER_NAME, USER_EMAIL
         FROM USER_INFO
         WHERE USER_ID = #{userId}
-        AND USER_PW = #{userPw}
+          AND USER_PW = #{userPw}
     </select>
 
     <!-- 아이디, 비밀번호 찾기에 활용
@@ -53,9 +53,9 @@
     -->
     <select id="getUserIdOrPw" parameterType="UserInfoDTO" resultType="UserInfoDTO">
         SELECT
-            USER_ID,
-            USER_NAME,
-            USER_EMAIL
+        USER_ID,
+        USER_NAME,
+        USER_EMAIL
         FROM USER_INFO
         WHERE 1=1
         <if test="userId neq null and userId neq '' "> <!-- 비밀번호 찾기라면, user_id 조회 추가 -->
@@ -72,5 +72,32 @@
         WHERE USER_ID = #{userId}
     </update>
 
+    <!-- 로그인되어있는 상태에서 비밀번호 체크 -->
+    <select id="getUserPwCheck" parameterType="UserInfoDTO" resultType="int">
+        SELECT COUNT(1)
+        FROM USER_INFO
+        WHERE USER_ID = #{userId}
+          AND USER_PW = #{userPw}
+    </select>
+
+    <!-- 이름 업데이트-->
+    <update id="updateUserName" parameterType="UserInfoDTO">
+        UPDATE USER_INFO
+        SET USER_NAME = #{userName}
+        WHERE USER_ID = #{userId}
+    </update>
+
+    <!-- 이메일 업데이트 -->
+    <update id="updateUserEmail" parameterType="UserInfoDTO">
+        UPDATE USER_INFO
+        SET USER_EMAIL = #{userEmail}
+        WHERE USER_ID = #{userId}
+    </update>
+
+    <!-- 회원탈퇴 -->
+    <delete id="deleteUserById" parameterType="UserInfoDTO">
+        DELETE FROM USER_INFO
+        WHERE USER_ID = #{userId}
+    </delete>
 
 </mapper>

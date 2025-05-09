@@ -69,8 +69,18 @@ public class UserInfoController {
 
 
     @GetMapping(value = "/myPage")
-    public String myPage() {
+    public String myPage(HttpSession session) {
         log.info("{}.myPage", this.getClass().getName());
+
+        String userId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"), "");
+        String verified = CmmUtil.nvl((String) session.getAttribute("SS_VERIFIED"), "");
+
+        if (userId.isEmpty()) {
+            return "redirect:/user/login";
+        }
+        if (!verified.equals("Y")) {
+            return "redirect:/user/verifyWithPw";
+        }
         return "/user/myPage";
     }
 
@@ -89,7 +99,7 @@ public class UserInfoController {
         return "/user/newPw";
     }
 
-    @GetMapping(value="/verifyWithPw")
+    @GetMapping(value = "/verifyWithPw")
     String verifWithPw(HttpSession session) {
         log.info("{}.verifWithPw Start!", this.getClass().getName());
 
@@ -586,7 +596,6 @@ public class UserInfoController {
     }
 
 
-
     @ResponseBody
     @PostMapping(value = "verifyAuthCodeOnly")
     public ResponseEntity<? extends CommonResponse<?>> verifyAuthCodeOnly(
@@ -616,10 +625,10 @@ public class UserInfoController {
 
             // 인증번호로 인증 성공
 
-            //세션값 제거
-
-            session.removeAttribute("authNumber");
-            session.removeAttribute("authEmail");
+//            //세션값 제거
+//
+//            session.removeAttribute("authNumber");
+//            session.removeAttribute("authEmail");
 
             // 이메일은 확인할때 DB는 암호화 되어있어서, 다시 암호화해서 조회
             pDTO.setUserEmail(EncryptUtil.encAES128CBC(pDTO.getUserEmail()));
@@ -657,22 +666,28 @@ public class UserInfoController {
             return CommonResponse.getFirstErrorAlert(bindingResult);
         }
 
+        String findPwUserId = CmmUtil.nvl((String) session.getAttribute("findPwUserId"));
+        String sessionUserId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
+        String userId = !findPwUserId.isEmpty() ? findPwUserId : sessionUserId;
+
         // 비밀번호 생성 결과를 저장할 변수들
         String samTitle = "";
         String samText = "";
         SweetAlertMsgDTO samDTO;
         ResponseEntity<? extends CommonResponse<?>> response;
 
-        String findPwUserId = CmmUtil.nvl((String) session.getAttribute("findPwUserId"));
-        String sessionUserId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
-        if (!findPwUserId.isEmpty() || !sessionUserId.isEmpty()) {
 
-            pDTO.setUserId(findPwUserId);
+        if (!userId.isEmpty()) {
 
-            //세션값 제거
-            session.removeAttribute("findPwUserId");
-            session.removeAttribute("authNumber");
-            session.removeAttribute("authEmail");
+            pDTO.setUserId(userId);
+
+            //  findPwUserId 기반인 경우만 제거 (로그인 상태는 유지)
+            if (!findPwUserId.isEmpty()) {
+                session.removeAttribute("findPwUserId");
+                session.removeAttribute("authNumber");
+                session.removeAttribute("authEmail");
+            }
+
 
             int result = userInfoService.newPwProc(pDTO); // returns 1 if success
 
@@ -711,6 +726,350 @@ public class UserInfoController {
         return response;
     }
 
+    @ResponseBody
+    @PostMapping(value = "/getUserPwCheckProc")
+    public ResponseEntity<? extends CommonResponse<?>> getUserPwCheckProc(
+            @Validated(OnPwCheck.class) @RequestBody UserInfoDTO pDTO,
+            BindingResult bindingResult, HttpSession session
+    ) throws Exception {
+        log.info("{}.getUserPwCheckProc Start!", this.getClass().getName());
+
+        if (bindingResult.hasErrors()) {
+            return CommonResponse.getFirstErrorAlert(bindingResult);
+        }
+
+        String userId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
+        String userPw = CmmUtil.nvl(pDTO.getUserPw());
+        log.info("userId: {} / userPw: {}", userId, userPw);
+
+
+        UserInfoDTO rDTO = UserInfoDTO.builder()
+                .userId(userId)
+                .userPw(userPw)
+                .build();
+
+        // 비밀번호 생성 결과를 저장할 변수들
+        String samTitle = "";
+        String samText = "";
+        SweetAlertMsgDTO samDTO;
+        ResponseEntity<? extends CommonResponse<?>> response;
+
+        try {
+
+            if (userId.isEmpty()) {
+
+                samTitle = "세션 만료";
+                samText = "세션이 만료되었습니다. 이메일 인증을 다시 진행해주세요.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+
+                return ResponseEntity.ok(CommonResponse.of(
+                        HttpStatus.UNAUTHORIZED, "fail", samDTO
+                ));
+            }
+
+            int result = Optional.ofNullable(userInfoService.getUserPwCheck(rDTO))
+                    .orElse(0);
+            log.info("result : {}", result);
+
+            if (result == 1) {
+
+                session.setAttribute("SS_VERIFIED", "Y");
+                response = ResponseEntity.ok(CommonResponse.of(
+                        HttpStatus.OK, "success", "비밀번호 확인 성공"
+                ));
+            } else {
+                samTitle = "비밀번호 확인 실패";
+                samText = "비밀번호가 틀렸습니다.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+
+                response = ResponseEntity.ok(CommonResponse.of(HttpStatus.OK, "fail", samDTO));
+            }
+
+        } catch (Exception e) {
+
+            log.error("{}.getUserPwCheckProc Error", this.getClass().getName(), e);
+            samTitle = "시스템 오류";
+            samText = "비밀번호 확인 중 오류가 발생했습니다.";
+            samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+            response = ResponseEntity.ok(CommonResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "fail", samDTO));
+        }
+
+        return response;
+    }
+
+    @ResponseBody
+    @PostMapping(value = "updateUserName")
+    public ResponseEntity<? extends CommonResponse<?>> updateUserName(
+            @Validated(OnUpdateUserName.class) @RequestBody UserInfoDTO pDTO,
+            BindingResult bindingResult, HttpSession session
+    ) throws Exception {
+        log.info("{}.updateUserName Start!", this.getClass().getName());
+
+        if (bindingResult.hasErrors()) {
+            return CommonResponse.getFirstErrorAlert(bindingResult);
+        }
+
+
+        String userId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
+        String userName = CmmUtil.nvl(pDTO.getUserName());
+        log.info("userId: {} / userName: {}", userId, userName);
+
+        // 비밀번호 생성 결과를 저장할 변수들
+        String samTitle = "";
+        String samText = "";
+        SweetAlertMsgDTO samDTO;
+        ResponseEntity<? extends CommonResponse<?>> response;
+
+        if (userId.isEmpty()) {
+            samTitle = "세션 만료";
+            samText = "세션이 만료되었습니다. 다시 로그인해주세요.";
+            samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+            return ResponseEntity.ok(CommonResponse.of(HttpStatus.UNAUTHORIZED, "fail", samDTO));
+        }
+
+        // 서비스에 보낼 dto 생성
+        UserInfoDTO rDTO = UserInfoDTO.builder()
+                .userId(userId)
+                .userName(userName)
+                .build();
+
+        try {
+
+            int result = userInfoService.updateUserName(
+                    Optional.ofNullable(rDTO).orElseGet(UserInfoDTO::new));
+            log.info("result : {}", result);
+
+            if (result == 1) {
+                // 이름 업데이트 성공
+                samTitle = "이름 수정 성공";
+                samText = "이름이 성공적으로 수정되었습니다.";
+                samDTO = SweetAlertMsgDTO.success(samTitle, samText);
+                response = ResponseEntity.ok(CommonResponse.of(
+                        HttpStatus.OK, "success", samDTO
+                ));
+            } else {
+                // 이름 업데이트 실패
+                samTitle = "이름 수정 실패";
+                samText = "이름 수정 중 문제가 발생했습니다. 다시 시도해주세요.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+                response = ResponseEntity.ok(CommonResponse.of(
+                        HttpStatus.INTERNAL_SERVER_ERROR, "fail", samDTO
+                ));
+            }
+
+
+        } catch (Exception e) {
+
+            log.error("{}.getUserPwCheckProc Error", this.getClass().getName(), e);
+            samTitle = "시스템 오류";
+            samText = "이름 수정 중 오류가 발생했습니다.";
+            samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+            response = ResponseEntity.ok(CommonResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "fail", samDTO));
+        }
+
+        return response;
+    }
+
+    @ResponseBody
+    @PostMapping("updateUserEmail")
+    public ResponseEntity<? extends CommonResponse<?>> updateUserEmail(
+            @Validated(OnUpdateEmail.class) @RequestBody UserInfoDTO pDTO,
+            BindingResult bindingResult, HttpSession session) {
+        log.info("{}.updateUserEmail Start!", this.getClass().getName());
+
+        if (bindingResult.hasErrors()) {
+            return CommonResponse.getFirstErrorAlert(bindingResult);
+        }
+
+        String userId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
+        String userEmail = CmmUtil.nvl(pDTO.getUserEmail());
+
+        String samTitle = "";
+        String samText = "";
+        SweetAlertMsgDTO samDTO;
+        ResponseEntity<? extends CommonResponse<?>> response;
+
+        try {
+            // 세션 시간으로 만료
+            Long sentTime = (Long) session.getAttribute("authSentTime");
+            if (sentTime == null || System.currentTimeMillis() - sentTime > 5 * 60 * 1000) {
+                session.removeAttribute("authEmail");
+                session.removeAttribute("authNumber");
+                session.removeAttribute("authSentTime");
+
+                samTitle = "세션 만료";
+                samText = "인증 시간이 만료되었습니다. 다시 인증해주세요.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+                return ResponseEntity.ok(CommonResponse.of(HttpStatus.UNAUTHORIZED, "fail", samDTO));
+            }
+
+            // 세션 인증 확인
+            String sessionEmail = (String) session.getAttribute("authEmail");
+            if (sessionEmail == null || !userEmail.equals(sessionEmail)) {
+                samTitle = "인증 오류";
+                samText = "인증된 이메일이 아니거나 세션이 만료되었습니다.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+                return ResponseEntity.ok(CommonResponse.of(HttpStatus.UNAUTHORIZED, "fail", samDTO));
+            }
+
+            // 세션 인증 통과 후 세션 삭제
+            session.removeAttribute("authEmail");
+            session.removeAttribute("authNumber");
+            session.removeAttribute("authSentTime");
+
+            // 서비스에 전달
+            UserInfoDTO rDTO = UserInfoDTO.builder()
+                    .userId(userId)
+                    .userEmail(userEmail)
+                    .build();
+
+            int result = userInfoService.updateUserEmail(rDTO);
+            log.info("result : {}", result);
+
+            if (result == 1) {
+                samTitle = "이메일 변경 성공";
+                samText = "이메일이 성공적으로 변경되었습니다.";
+                samDTO = SweetAlertMsgDTO.success(samTitle, samText);
+                response = ResponseEntity.ok(CommonResponse.of(HttpStatus.OK, "success", samDTO));
+            } else {
+                samTitle = "이메일 변경 실패";
+                samText = "이메일 변경 중 문제가 발생했습니다.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+                response = ResponseEntity.ok(CommonResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "fail", samDTO));
+            }
+
+        } catch (Exception e) {
+            log.error("{}.updateUserEmail Error", this.getClass().getName(), e);
+            samTitle = "시스템 오류";
+            samText = "이메일 변경 중 오류가 발생했습니다.";
+            samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+            response = ResponseEntity.ok(CommonResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "fail", samDTO));
+        }
+
+        return response;
+
+    }
+
+    @ResponseBody
+    @PostMapping(value = "sendAuthEmailForEmailUpdate")
+    public ResponseEntity<? extends CommonResponse<?>> sendAuthEmailForEmailUpdate(
+            @Validated(OnSendEmail.class) @RequestBody UserInfoDTO pDTO,
+            BindingResult bindingResult, HttpSession session
+    ) throws Exception {
+
+        log.info("{}.sendAuthEmailForEmailUpdate Start!", this.getClass().getName());
+
+        if (bindingResult.hasErrors()) {
+            return CommonResponse.getFirstErrorAlert(bindingResult);
+        }
+
+        String samTitle = "";
+        String samText = "";
+        SweetAlertMsgDTO samDTO;
+        ResponseEntity<? extends CommonResponse<?>> response;
+
+        try {
+            // 암호화된 이메일로 변환
+            pDTO.setUserEmail(EncryptUtil.encAES128CBC(pDTO.getUserEmail()));
+
+            // 인증코드 전송 로직
+            UserInfoDTO rDTO = Optional.ofNullable(userInfoService.sendAuthCode(pDTO))
+                    .orElseGet(UserInfoDTO::new);
+
+            // 이전 인증번호가 있다면 만료 시간 체크 후 제거
+            Long sentTime = (Long) session.getAttribute("authSentTime");
+
+            if (sentTime != null && System.currentTimeMillis() - sentTime > 5 * 60 * 1000) {
+                session.removeAttribute("authNumber");
+                session.removeAttribute("authSentTime");
+                session.removeAttribute("authEmail");
+                log.info("Expired authNumber removed from session.");
+            }
+
+            // 새 인증번호 저장
+            session.setAttribute("authNumber", rDTO.getAuthNumber());
+            session.setAttribute("authEmail", rDTO.getUserEmail());
+            session.setAttribute("authSentTime", System.currentTimeMillis());
+
+            log.info("authNumber: {} / authEmail: {}", rDTO.getAuthNumber(), rDTO.getUserEmail());
+
+            samTitle = "메일 전송 완료";
+            samText = "입력한 이메일 주소로 인증번호가 전송되었습니다.";
+            samDTO = SweetAlertMsgDTO.success(samTitle, samText);
+
+            response = ResponseEntity.ok(CommonResponse.of(HttpStatus.OK, "success", samDTO));
+
+        } catch (Exception e) {
+            log.error("{}.sendAuthEmailForEmailUpdate Error", this.getClass().getName(), e);
+
+            samTitle = "메일 전송 실패";
+            samText = "시스템 오류로 인증메일 전송에 실패했습니다.";
+            samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+
+            response = ResponseEntity.ok(CommonResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "fail", samDTO));
+        }
+
+        return response;
+    }
+
+    @ResponseBody
+    @PostMapping(value="deleteUserById")
+    public ResponseEntity<? extends CommonResponse<?>> deleteUserById(HttpSession session) throws Exception {
+        log.info("{}.deleteUserById Start!", this.getClass().getName());
+
+        String UserId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
+
+
+        String samTitle = "";
+        String samText = "";
+        SweetAlertMsgDTO samDTO;
+        ResponseEntity<? extends CommonResponse<?>> response;
+
+        try {
+
+
+            if (UserId.isEmpty()) {
+                samTitle = "세션 만료";
+                samText = "세션이 만료되었습니다. 로그인을 다시 진행해주세요";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+                return ResponseEntity.ok(CommonResponse.of(HttpStatus.UNAUTHORIZED, "fail", samDTO));
+            }
+
+            UserInfoDTO pDTO = Optional.ofNullable(
+                            UserInfoDTO.builder().userId(UserId).build())
+                    .orElseGet(UserInfoDTO::new);
+
+            int result = userInfoService.deleteUserById(pDTO);
+            log.info("result : {}", result);
+
+            if (result == 1) {
+                session.invalidate();
+
+                samTitle = "회원 탈퇴 성공";
+                samText = "회원 탈퇴가 정상적으로 처리되었습니다.";
+                samDTO = SweetAlertMsgDTO.success(samTitle, samText);
+                response = ResponseEntity.ok(CommonResponse.of(HttpStatus.OK, "success", samDTO));
+            } else {
+                samTitle = "회원 탈퇴 실패";
+                samText = "회원 탈퇴 처리 중 문제가 발생했습니다.";
+                samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+                response = ResponseEntity.ok(CommonResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "fail", samDTO));
+            }
+
+        } catch (Exception e) {
+            log.error("{}.deleteUserById Error", this.getClass().getName(), e);
+            samTitle = "시스템 오류";
+            samText = "회원 탈퇴 처리 중 오류가 발생했습니다.";
+            samDTO = SweetAlertMsgDTO.fail(samTitle, samText);
+            response = ResponseEntity.ok(CommonResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "fail", samDTO));
+
+        } finally {
+            log.info("samTitle: {} samText: {}", samTitle, samText);
+            log.info("{}.deleteUserById End!", this.getClass().getName());
+        }
+
+        return response;
+    }
 
 }
 

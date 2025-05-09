@@ -22,14 +22,15 @@ public class UserInfoDTO {
         private String userId; // 사용자 아이디
 
         @NotBlank(message = "사용자 이름은 필수 학목입니다.", groups =
-                {OnRegister.class, OnVerifyAuth.class, OnFindIdOrPw.class})
-        @Size(max = 10, message = "사용자 이름은 10글자까지 입력가능합니다.", groups = OnRegister.class)
+                {OnRegister.class, OnVerifyAuth.class, OnUpdateUserName.class})
+        @Size(max = 10, message = "사용자 이름은 10글자까지 입력가능합니다.", groups =
+                {OnRegister.class, OnUpdateUserName.class})
         private String userName;
 
         @NotBlank(message = "이메일은 필수 학목입니다.", groups =
-                {OnSendEmail.class, OnRegister.class,OnVerifyAuth.class, OnFindIdOrPw.class})
+                {OnSendEmail.class, OnRegister.class,OnVerifyAuth.class, OnFindIdOrPw.class, OnUpdateEmail.class})
         @Email(message = "올바른 이메일 형식이어야 합니다.", groups =
-                {OnSendEmail.class, OnRegister.class})
+                {OnSendEmail.class, OnRegister.class, OnUpdateEmail.class})
         private String userEmail; // 사용자 이메일
 
         @NotBlank(message = "비밀번호는 필수 학목입니다.", groups = {OnRegister.class, OnLogin.class, OnNewPw.class})

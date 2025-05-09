@@ -19,8 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class
-UserInfoService implements IUserInfoService {
+public class UserInfoService implements IUserInfoService {
 
     private final IUserInfoMapper userInfoMapper; // 회원관련 SQL 사용하기 위한  Mapper 가져오기
 
@@ -136,7 +135,7 @@ UserInfoService implements IUserInfoService {
             // 아이디, 패스워드 일치하는지 체크하는 쿼리에서 이메일 값 가져옴.(아직 암호화 되어 있어서, 복호화 수행함)
             MailDTO mDTO = MailDTO.builder()
                     .toMail(EncryptUtil.decAES128CBC(CmmUtil.nvl(rDTO.getUserEmail())))
-                    .title("로그인 알립!")
+                    .title("로그인 알림!")
                     .text(DateUtil.getDateTime("yyyy.MM.dd hh:mm:ss") + "에 "
                             + CmmUtil.nvl(rDTO.getUserName()) + "님이 로그인하였습니다.")
                     .build();
@@ -165,6 +164,7 @@ UserInfoService implements IUserInfoService {
         return rDTO;
     }
 
+    // 인증 이메일 발송
     @Override
     public UserInfoDTO sendAuthCode(UserInfoDTO pDTO) throws Exception {
 
@@ -190,18 +190,74 @@ UserInfoService implements IUserInfoService {
         return rDTO;
     }
 
+    // 새로운 비밀번호로 업데이트
     @Override
     public int newPwProc(UserInfoDTO pDTO) throws Exception {
 
         log.info("{}.newPwProc Start!", this.getClass().getName());
 
+        log.info(">> userId: {}", pDTO.getUserId());
+        log.info(">> raw password: {}", pDTO.getUserPw());
+
         // 비밀번호 재설정
         pDTO.setUserPw(EncryptUtil.encHashSHA256(pDTO.getUserPw()));
         int success = userInfoMapper.updatePassword(pDTO);
 
+        log.info(">> userId: {}", pDTO.getUserId());
+        log.info(">> raw password: {}", pDTO.getUserPw());
+
         log.info("{}.newProc End!", this.getClass().getName());
 
         return success;
+    }
+
+    @Override
+    public int getUserPwCheck(UserInfoDTO pDTO) throws Exception {
+
+        // 비밀번호 암호화
+        pDTO.setUserPw(CmmUtil.nvl(EncryptUtil.encHashSHA256(pDTO.getUserPw())));
+
+        // 비밀번호 체크
+        int result = userInfoMapper.getUserPwCheck(Optional.ofNullable(pDTO)
+                .orElseGet(UserInfoDTO::new));
+        return result;
+    }
+
+    @Override
+    public int updateUserName(UserInfoDTO pDTO) throws Exception {
+
+        log.info("{}.updateUserName Start!", this.getClass().getName());
+
+        int result = userInfoMapper.updateUserName(pDTO);
+
+        log.info("{}.updateUserName End!", this.getClass().getName());
+        return result;
+    }
+
+    @Override
+    public int updateUserEmail(UserInfoDTO pDTO) throws Exception {
+
+        log.info("{}.updateUserEmail Start!", this.getClass().getName());
+
+        pDTO.setUserEmail(CmmUtil.nvl(EncryptUtil.encAES128CBC(pDTO.getUserEmail())));
+        int result = userInfoMapper.updateUserEmail(pDTO);
+
+        log.info("{}.updateUserEmail End!", this.getClass().getName());
+
+        return result;
+    }
+
+    @Override
+    public int deleteUserById(UserInfoDTO pDTO) throws Exception {
+
+        log.info("{}.deleteUserById Start!", this.getClass().getName());
+
+        int result = Optional.ofNullable(userInfoMapper.deleteUserById(pDTO)).orElse(0);
+        log.info("result: {}", result);
+
+        log.info("{}.deleteUserById End!", this.getClass().getName());
+
+        return result;
     }
 
 

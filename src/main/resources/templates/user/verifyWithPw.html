@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="/css/components/buttonAndInput.css"/>
 
 
+
     <link rel="stylesheet" href="/css/alert/customToastStyle.css">
 
     <!--SweetAlert Animate-->
@@ -42,9 +43,9 @@
 
     <script type="text/javascript" src="/js/alert/showPresetToast.js"></script>
     <!-- signUp.js -->
-    <script type="text/javascript" src="/js/pages/verifWithPw.js"></script>
+    <script type="text/javascript" src="/js/pages/verifyWithPw.js"></script>
 
-    <title>신원확인</title>
+    <title>본인확인</title>
 </head>
 <body>
 <!--====== NAVBAR ONE PART START ======-->
@@ -106,7 +107,7 @@
                                     <span th:text="${session.SS_USER_NAME} + '님'"></span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" href="/user/myPage"
+                                    <li><a class="dropdown-item" href="/user/verifyWithPw"
                                            style="color: var(--success)">마이페이지</a></li>
                                     <li><a class="dropdown-item" href="/user/logout"
                                            style="color: var(--error)">로그아웃</a></li>
@@ -138,7 +139,7 @@
                                   class="card-icon"></iconify-icon>
                 </div>
                 <div class="card-content text-center">
-                    <h1 class="title">신원 확인</h1>
+                    <h1 class="title">본인 확인</h1>
 
                     <form id="form" class="form-style form-style-five">
 

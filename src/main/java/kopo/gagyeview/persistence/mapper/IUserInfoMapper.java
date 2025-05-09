@@ -28,4 +28,17 @@ public interface IUserInfoMapper {
 
     // 비밀번호 재설정
     int updatePassword(UserInfoDTO pDTO) throws Exception;
+
+    // 로그인 되어있는 상태에서 비밀번호 확인
+    int getUserPwCheck(UserInfoDTO pDTO) throws Exception;
+
+    // 이름 업데이트
+    int updateUserName(UserInfoDTO pDTO) throws Exception;
+
+    // 이메일 업데이트
+    int updateUserEmail(UserInfoDTO pDTO) throws Exception;
+
+    // 회원 탈퇴
+    int deleteUserById(UserInfoDTO pDTO) throws Exception;
+
 }
