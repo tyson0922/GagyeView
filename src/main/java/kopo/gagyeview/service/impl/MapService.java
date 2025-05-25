@@ -54,7 +54,7 @@ public class MapService implements IMapService {
 
         List<MartDTO> pList = new LinkedList<>();
 
-        for (int i = 0; i < Math.min(documents.size(), 3); i++) {
+        for (int i = 0; i < Math.min(documents.size(), 10); i++) {
             Map<String, Object> doc = documents.get(i);
 
             String mName = (String) doc.get("place_name");

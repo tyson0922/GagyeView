@@ -8,6 +8,54 @@ $(document).ready(function(){
     const map = new kakao.maps.Map(container, options);
 
     let markers = []; // clear makers before new search
+    let currentLocationMarker = null;
+
+    function updateCurrentLocation(position) {
+        const accuracy = position.coords.accuracy;
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        // if (accuracy > 100) {
+        //     console.warn("Accuracy too low (" + accuracy + "m). Ignoring location update.");
+        //     return;
+        // }
+
+        const latLng = new kakao.maps.LatLng(lat, lng);
+        map.setCenter(latLng);
+
+        if (currentLocationMarker) {
+            currentLocationMarker.setMap(null);
+        }
+
+        currentLocationMarker = new kakao.maps.Marker({
+            map: map,
+            position: latLng,
+            title: "현재 위치"
+        });
+    }
+
+    function startLocationTracking() {
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                updateCurrentLocation,
+                function (error) {
+                    console.error("Geolocation watch error:", error);
+                    showPresetToast("error", "오류", "위치 정보를 가져올 수 없습니다.");
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 10000
+                }
+            );
+        } else {
+            showPresetToast("warning", "경고", "브라우저가 위치 정보를 지원하지 않습니다.");
+        }
+    }
+
+    $("#currentLocationBtn").on("click", function () {
+        startLocationTracking(); // Starts continuous tracking
+    });
 
     $("#searchMartBtn").on("click", function(){
 
@@ -43,12 +91,21 @@ $(document).ready(function(){
                 } else {
                     rList.forEach(mart => {
                         const html = `
-                            <li class="list-group-item search-result">
-                                <strong>
+                            <li class="list-group-item search-result d-flex justify-content-between align-items-center flex-column flex-sm-row">
+                                <div class="flex-grow-1">
+                                    <strong>
                                     <a href="${mart.mUrl}" target="_blank">${mart.mName}</a>
-                                </strong><br/>
-                                ${mart.mAddress}<br/>
-                                ${mart.mPhoneNm ?? "전화번호 없음"}
+                                    </strong><br/>
+                                    ${mart.mAddress}<br/>
+                                    ${mart.mPhoneNm ?? "전화번호 없음"}
+                                </div>
+                                <div class="ms-2 flex-shrink-0">
+                                    <button class="btn btn-sm caution-btn-outline move-to-map-btn"
+                                            data-x="${mart.x}" data-y="${mart.y}">
+                                        지도이동
+                                    </button>
+                                </div>
+                               
                             </li>
                         `;
                         rListElement.append(html);
@@ -69,10 +126,19 @@ $(document).ready(function(){
 
                 rCard.show();
 
+                $("#searchResultList").on("click", ".move-to-map-btn", function(){
+                    const x = parseFloat($(this).data("x"));
+                    const y = parseFloat($(this).data("y"));
+
+                    const latlng = new kakao.maps.LatLng(y, x);
+                    map.setCenter(latlng);
+                });
+
             },
             error: function(){
                 showPresetToast("error", "오류","마트 검색중 문제가 발생했습니다.");
             }
         });
     });
+
 });

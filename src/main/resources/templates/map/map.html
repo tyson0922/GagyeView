@@ -21,6 +21,9 @@
     <!-- custom toast css-->
     <link rel="stylesheet" href="/css/alert/customToastStyle.css">
 
+    <!-- map.css -->
+    <link rel="stylesheet" href="/css/pages/map.css">
+
 
     <!--====== Bootstrap js ======-->
     <!--    <script type="text/javascript" src="/js/bootstrap/bootstrap.bundle.min.js"></script>-->
@@ -44,7 +47,6 @@
     <!-- map js -->
     <script th:src="@{'//dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoJsKey} + '&libraries=services'}"></script>
     <script type="text/javascript" src="/js/pages/map.js"></script>
-
     <title>지도</title>
 </head>
 <body>
@@ -145,21 +147,21 @@
                     <!-- col -->
                     <div class="col-lg-8 col-md-9 col-sm-11">
                         <div class="single-card card-style-one">
-                            <!--                            <div class="card-image">-->
 
-                            <!--                                <iconify-icon icon="material-symbols:directions-outline-rounded"-->
-                            <!--                                              class="card-icon"></iconify-icon>-->
-
-                            <!--                            </div>-->
                             <div class="card-content">
                                 <h4 class="card-title">
                                     <a href="javascript:void(0)">마트 지도</a>
                                 </h4>
-                                <p class="text">
-                                    지도를 통해 마트를 선택하거나 검색을 통해
-                                    <br>
-                                    위치 및 상세 정보를 확인할 수 있습니다
-                                </p>
+                                <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between">
+                                    <p class="text mb-2 mb-sm-0" style="width: 100%; padding-left: 100px;">
+                                        마트 검색을 통해 위치 및 상세 정보를 확인할 수 있습니다
+                                    </p>
+                                    <div style="width: 13%; text-align: right;">
+                                        <button class="btn btn-sm caution-btn-outline w-100 mt-2 mt-sm-0" id="currentLocationBtn">
+                                            현재 위치
+                                        </button>
+                                    </div>
+                                </div>
                                 <br/>
                                 <div id="martMap" style="width: 100%; height: 460px;"></div>
                             </div>
@@ -205,7 +207,7 @@
                              style="display: none; margin-top: 10px;">
                             <div class="card-content">
                                 <h4 class="card-title">검색 결과</h4>
-                                <ol id="searchResultList" style="padding-left: 16px;">
+                                <ol id="searchResultList">
                                     <!-- Search results will be injected here -->
                                 </ol>
                             </div>

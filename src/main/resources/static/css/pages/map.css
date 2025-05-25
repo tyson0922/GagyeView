@@ -1,0 +1,11 @@
+#searchResultCard .card-content {
+    max-height: 380px;
+    overflow-y: hidden; /* prevents the title from scrolling */
+    display: flex;
+    flex-direction: column;
+}
+
+#searchResultList {
+    overflow-y: auto;
+    flex-grow: 1;
+}

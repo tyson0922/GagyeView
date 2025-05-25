@@ -35,7 +35,7 @@ public class UserInfoController {
     public String signUp() {
         log.info("{}.signUp", this.getClass().getName());
 
-        return "/user/signUp";
+        return "user/signUp";
     }
 
     @GetMapping(value = "/login")
@@ -52,19 +52,19 @@ public class UserInfoController {
             return "redirect:/";
         }
 
-        return "/user/login";
+        return "user/login";
     }
 
     @GetMapping(value = "/findId")
     public String findId() {
         log.info("{}.findId", this.getClass().getName());
-        return "/user/findId";
+        return "user/findId";
     }
 
     @GetMapping(value = "/findPw")
     public String findPw() {
         log.info("{}.findPw", this.getClass().getName());
-        return "/user/findPw";
+        return "user/findPw";
     }
 
 
@@ -81,7 +81,7 @@ public class UserInfoController {
         if (!verified.equals("Y")) {
             return "redirect:/user/verifyWithPw";
         }
-        return "/user/myPage";
+        return "user/myPage";
     }
 
     @GetMapping(value = "/newPw")
@@ -92,11 +92,11 @@ public class UserInfoController {
         log.info("findPwUserId: {}", findPwUserId);
 
         if (findPwUserId == null || findPwUserId.isEmpty()) {
-            return "redirect:/user/findPw";
+            return "redirect:user/findPw";
         }
 
         log.info("{}.findPw End!", this.getClass().getName());
-        return "/user/newPw";
+        return "user/newPw";
     }
 
     @GetMapping(value = "/verifyWithPw")
@@ -111,7 +111,7 @@ public class UserInfoController {
         }
 
         log.info("{}.verifWithPw End!", this.getClass().getName());
-        return "/user/verifyWithPw";
+        return "user/verifyWithPw";
     }
 
     @GetMapping(value = "/logout")
