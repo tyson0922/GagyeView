@@ -1,22 +1,25 @@
 package kopo.gagyeview.persistence.repository.impl;
 
 import com.mongodb.MongoException;
+import com.mongodb.client.result.UpdateResult;
 import kopo.gagyeview.dto.MonTrnsDTO;
-import kopo.gagyeview.persistence.repository.AbstractMongoDBCommon;
 import kopo.gagyeview.persistence.repository.IFinInfoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-public class FinInfoMapper extends AbstractMongoDBCommon implements IFinInfoMapper {
+public class FinInfoMapper implements IFinInfoMapper {
 
     // MongoDB와 연결하기 위한 Spring Data MongoTemplate
     private final MongoTemplate mongodb;
@@ -33,18 +36,11 @@ public class FinInfoMapper extends AbstractMongoDBCommon implements IFinInfoMapp
      */
     @Override
     public int insertTrns(MonTrnsDTO pDTO) throws MongoException {
-        log.info("{}.insertTrns Start!", this.getClass().getName());
-
-        // 컬렉션이 존재하지 않으면 생성
-        if (super.createCollection(mongodb, colNm)) {
-            log.info("Collection '{}' created!", colNm);
-        }
-
         // DTO 데이터를 MongoDB에 insert
         mongodb.insert(pDTO, colNm);
 
-        log.info("{}.insertTrns End!", this.getClass().getName());
-        return 1;
+        int res = 1; // 성공적으로 insert되면 1 반환
+        return res;
     }
 
     /**
@@ -55,22 +51,19 @@ public class FinInfoMapper extends AbstractMongoDBCommon implements IFinInfoMapp
      * @return 조회된 거래 목록
      */
     @Override
-    public List<MonTrnsDTO> getTrnsByUserAndMon(String userId, String yrMon) {
-        log.info("{}.getTrnsByUserAndMon Start!", this.getClass().getName());
-        log.info("userId: {}, yrMon: {}", userId, yrMon);
-
+    public List<MonTrnsDTO> getTrnsByUserAndMon(String userId, String yrMon) throws MongoException{
         // 검색 조건 설정 (userId AND yrMon)
         Query query = new Query();
         query.addCriteria(Criteria.where("userId").is(userId));
         query.addCriteria(Criteria.where("yrMon").is(yrMon));
 
+
+        // ✅ 최신순 정렬 추가 (거래일시 기준)
+        query.with(Sort.by(Sort.Direction.DESC, "monTrnsDetailDTO.trnsDt"));
+
         // 조건에 맞는 거래 목록 조회
-        List<MonTrnsDTO> result = mongodb.find(query, MonTrnsDTO.class, colNm);
-
-        log.info("Found {} transaction(s)", result.size());
-        log.info("{}.getTrnsByUserAndMon End!", this.getClass().getName());
-
-        return result;
+        List<MonTrnsDTO> res = mongodb.find(query, MonTrnsDTO.class, colNm);
+        return res;
     }
 
     /**
@@ -80,19 +73,25 @@ public class FinInfoMapper extends AbstractMongoDBCommon implements IFinInfoMapp
      * @return 삭제된 데이터 개수
      */
     @Override
-    public int deleteTrnsById(String id) {
-        log.info("{}.deleteTrnsById Start!", this.getClass().getName());
-        log.info("id: {}", id);
-
+    public int deleteTrnsById(String id) throws MongoException {
         // _id 값을 기준으로 삭제 조건 생성
         Query query = new Query(Criteria.where("_id").is(id));
 
         // 삭제 실행 및 결과 수 반환
-        long deletedCount = mongodb.remove(query, MonTrnsDTO.class, colNm).getDeletedCount();
+        int res = (int) mongodb.remove(query, MonTrnsDTO.class, colNm).getDeletedCount();
+        return res;
+    }
 
-        log.info("Deleted {} transaction(s)", deletedCount);
-        log.info("{}.deleteTrnsById End!", this.getClass().getName());
+    @Override
+    public int updateTrns(MonTrnsDTO pDTO) {
+        Query query = new Query(Criteria.where("_id").is(pDTO.id()));
 
-        return (int) deletedCount;
+        Update update = new Update()
+                .set("monTrnsDetailDTO", pDTO.monTrnsDetailDTO())
+                .set("catType", pDTO.catType())
+                .set("chgDt", new Date()); // Optional: Update modified timestamp
+
+        UpdateResult result = mongodb.updateFirst(query, update, MonTrnsDTO.class, colNm);
+        return (int) result.getModifiedCount();
     }
 }
