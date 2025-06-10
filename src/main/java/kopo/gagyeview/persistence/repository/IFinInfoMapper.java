@@ -1,5 +1,6 @@
 package kopo.gagyeview.persistence.repository;
 
+import kopo.gagyeview.dto.AggregationResultDTO;
 import kopo.gagyeview.dto.MonTrnsDTO;
 
 import java.util.List;
@@ -38,4 +39,14 @@ public interface IFinInfoMapper {
      * @return 저장 성공 시 1
      */
     int updateTrns(MonTrnsDTO pDTO);
+
+    List<MonTrnsDTO> getTrnsByDateRange(String userId, String startDate, String endDate) throws Exception;
+
+    List<AggregationResultDTO> monTotalByType(String userId) throws Exception;
+
+    List<AggregationResultDTO> monIncomeExpense(String userId) throws Exception;
+
+    List<AggregationResultDTO> monthlyCategoryStack(String userId) throws Exception;
+
+
 }

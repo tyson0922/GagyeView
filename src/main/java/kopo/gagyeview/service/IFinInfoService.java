@@ -1,5 +1,6 @@
 package kopo.gagyeview.service;
 
+import kopo.gagyeview.dto.AggregationResultDTO;
 import kopo.gagyeview.dto.MonTrnsDTO;
 
 import java.util.List;
@@ -41,4 +42,12 @@ public interface IFinInfoService {
      * @throws Exception 예외 발생 시
      */
     int updateTrns(MonTrnsDTO pDTO) throws Exception;
+
+    List<MonTrnsDTO> getTrnsByDateRange(String userId, String startDate, String endDate) throws Exception;
+
+    List<AggregationResultDTO> monTotalByType(String userId) throws Exception;
+
+    List<AggregationResultDTO> monIncomeExpense(String userId) throws Exception;
+
+    List<AggregationResultDTO> monthlyCategoryStack(String userId) throws Exception;
 }

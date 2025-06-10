@@ -1,5 +1,6 @@
 package kopo.gagyeview.service.impl;
 
+import kopo.gagyeview.dto.AggregationResultDTO;
 import kopo.gagyeview.dto.MonTrnsDTO;
 import kopo.gagyeview.persistence.repository.AbstractMongoDBCommon;
 import kopo.gagyeview.persistence.repository.IFinInfoMapper;
@@ -88,4 +89,57 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
         log.info("{}.updateTrns End!", this.getClass().getName());
         return res;
     }
+
+    @Override
+    public List<MonTrnsDTO> getTrnsByDateRange(String userId, String startDate, String endDate) throws Exception {
+        log.info("{}.getTrnsByDateRange Start!", this.getClass().getName());
+
+        List<MonTrnsDTO> res = finInfoMapper.getTrnsByDateRange(userId, startDate, endDate);
+
+        log.info("{}.getTrnsByDateRange End!", this.getClass().getName());
+        return res;
+    }
+
+    @Override
+    public List<AggregationResultDTO> monTotalByType(String userId) throws Exception {
+        log.info("monTotalByType Start - userId: {}", userId);
+
+        List<AggregationResultDTO> rList = finInfoMapper.monTotalByType(userId);
+
+        for (AggregationResultDTO dto : rList) {
+            log.info("[donutData] yrMon: {}, catType: {}, total: {}",
+                    dto.yrMon(), dto.catType(), dto.total());
+        }
+
+        return rList;
+    }
+
+    @Override
+    public List<AggregationResultDTO> monIncomeExpense(String userId) throws Exception {
+        log.info("monIncomeExpense Start - userId: {}", userId);
+
+        List<AggregationResultDTO> rList = finInfoMapper.monIncomeExpense(userId);
+
+        for (AggregationResultDTO dto : rList) {
+            log.info("[barData] yrMon: {}, income: {}, expense: {}",
+                    dto.yrMon(), dto.income(), dto.expense());
+        }
+
+        return rList;
+    }
+
+    @Override
+    public List<AggregationResultDTO> monthlyCategoryStack(String userId) throws Exception {
+        log.info("monthlyCategoryStack Start - userId: {}", userId);
+
+        List<AggregationResultDTO> rList = finInfoMapper.monthlyCategoryStack(userId);
+
+        for (AggregationResultDTO dto : rList) {
+            log.info("[stackData] yrMon: {}, catNm: {}, total: {}",
+                    dto.yrMon(), dto.catNm(), dto.total());
+        }
+
+        return rList;
+    }
+
 }

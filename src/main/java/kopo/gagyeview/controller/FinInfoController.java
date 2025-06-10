@@ -2,6 +2,7 @@ package kopo.gagyeview.controller;
 
 import jakarta.servlet.http.HttpSession;
 import kopo.gagyeview.controller.response.CommonResponse;
+import kopo.gagyeview.dto.AggregationResultDTO;
 import kopo.gagyeview.dto.MonTrnsDTO;
 import kopo.gagyeview.dto.MonTrnsDetailDTO;
 import kopo.gagyeview.dto.SweetAlertMsgDTO;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 @Slf4j
@@ -28,7 +30,7 @@ public class FinInfoController {
     private final IFinInfoService finInfoService;
 
     @GetMapping(value="")
-    public String finInfoPage(HttpSession session) {
+    public String finInfoPage(HttpSession session, Model model) {
         log.info("{}.finInfoPage Start!", this.getClass().getName());
 
         String userId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
@@ -39,6 +41,25 @@ public class FinInfoController {
         }
 
         log.info("Logged in userId: {}", userId);
+
+        try {
+            // 서비스 호출
+            List<AggregationResultDTO> donutData = finInfoService.monTotalByType(userId);
+            List<AggregationResultDTO> barData = finInfoService.monIncomeExpense(userId);
+            List<AggregationResultDTO> stackData = finInfoService.monthlyCategoryStack(userId);
+
+            log.info("donutData size: {}", donutData.size());
+            log.info("barData size: {}", barData.size());
+            log.info("stackData size: {}", stackData.size());
+
+            // 모델에 데이터 담기
+            model.addAttribute("donutData", donutData);
+            model.addAttribute("barData", barData);
+            model.addAttribute("stackData", stackData);
+
+        } catch (Exception e) {
+            log.error("finInfoPage data load error: {}", e.getMessage());
+        }
         log.info("{}.finInfoPage End!", this.getClass().getName());
 
 
@@ -46,20 +67,33 @@ public class FinInfoController {
     }
 
     @GetMapping("/detail")
-    public String finInfoPageDetail(HttpSession session, Model model) throws Exception {
+    public String finInfoPageDetail(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            HttpSession session,
+            Model model) throws Exception {
+
         log.info("{}.finInfoPageDetail Start!", this.getClass().getName());
+
         String userId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
         if (userId.isEmpty()) return "redirect:/";
 
-        String yrMon = "2025-05";
-        List<MonTrnsDTO> trnsList = finInfoService.getTrnsByUserAndMon(userId, yrMon);
+        // Default to current month
+        if (startDate == null || startDate.isEmpty() || endDate == null || endDate.isEmpty()) {
+            LocalDate now = LocalDate.now();
+            startDate = now.withDayOfMonth(1).toString(); // 2025-05-01
+            endDate = now.withDayOfMonth(now.lengthOfMonth()).toString(); // 2025-05-31
+        }
 
-        // 💰 금액 포맷을 위한 Formatter
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+
+        List<MonTrnsDTO> trnsList = finInfoService.getTrnsByDateRange(userId, startDate, endDate);
+
         NumberFormat formatter = NumberFormat.getNumberInstance(Locale.KOREA);
-        formatter.setMaximumFractionDigits(0); // 소수점 없애기
+        formatter.setMaximumFractionDigits(0);
 
         List<Map<String, Object>> displayList = new ArrayList<>();
-
         for (MonTrnsDTO dto : trnsList) {
             Map<String, Object> item = new HashMap<>();
             item.put("dto", dto);
@@ -69,6 +103,7 @@ public class FinInfoController {
 
         model.addAttribute("displayList", displayList);
         log.info("{}.finInfoPageDetail End!", this.getClass().getName());
+
         return "finInfo/finInfoDetail";
     }
 

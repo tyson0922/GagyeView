@@ -58,7 +58,7 @@ $(document).ready(function () {
                 data: JSON.stringify(commonPayload),
                 success: function (res) {
                     const { title, text, icon } = res.data;
-                    Swal.fire({ title, text, icon }).then(() => {
+                    showPresetToast(icon, title, text, function () {
                         if (res.message === "success") {
                             window.location.href = "/finInfo/detail";
                         }
@@ -77,7 +77,7 @@ $(document).ready(function () {
                 data: JSON.stringify(commonPayload),
                 success: function (res) {
                     const { title, text, icon } = res.data;
-                    Swal.fire({ title, text, icon }).then(() => {
+                    showPresetToast(icon, title, text, function () {
                         if (res.message === "success") {
                             window.location.href = "/finInfo/detail";
                         }

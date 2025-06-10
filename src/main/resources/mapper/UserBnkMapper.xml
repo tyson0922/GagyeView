@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--JAVA와 연결할 Mapper 파일 설정-->
+<mapper namespace="kopo.gagyeview.persistence.mapper.IUserBnkMapper">
+
+    <insert id="insertUserBank" parameterType="UserBnkDTO">
+        INSERT INTO USER_BNK (
+            USER_ID, BNK_NM, INI_NUM, CUR_NUM,
+            REG_ID, REG_DT, CHG_ID, CHG_DT
+        ) VALUES (
+                     #{userId}, #{bnkNm}, #{iniNum}, #{curNum},
+                     #{regId}, NOW(), #{chgId}, NOW()
+                 )
+    </insert>
+
+    <select id="checkDuplicate" parameterType="UserBnkDTO" resultType="int">
+        SELECT COUNT(*) FROM USER_BNK WHERE USER_ID = #{userId} AND BNK_NM = #{bnkNm}
+    </select>
+
+    <select id="selectUserBankList" parameterType="string" resultType="UserBnkDTO">
+        SELECT USER_ID, BNK_NM, INI_NUM, CUR_NUM, REG_ID, REG_DT, CHG_ID, CHG_DT
+        FROM USER_BNK
+        WHERE USER_ID = #{userId}
+    </select>
+
+</mapper>
+

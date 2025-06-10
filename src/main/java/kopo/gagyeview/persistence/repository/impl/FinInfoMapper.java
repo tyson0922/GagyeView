@@ -2,19 +2,25 @@ package kopo.gagyeview.persistence.repository.impl;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.result.UpdateResult;
+import kopo.gagyeview.dto.AggregationResultDTO;
 import kopo.gagyeview.dto.MonTrnsDTO;
 import kopo.gagyeview.persistence.repository.IFinInfoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
 @Repository
 @Slf4j
@@ -94,4 +100,95 @@ public class FinInfoMapper implements IFinInfoMapper {
         UpdateResult result = mongodb.updateFirst(query, update, MonTrnsDTO.class, colNm);
         return (int) result.getModifiedCount();
     }
+
+    @Override
+    public List<MonTrnsDTO> getTrnsByDateRange(String userId, String startDate, String endDate) throws Exception {
+        Query query = new Query();
+
+        query.addCriteria(Criteria.where("userId").is(userId));
+
+        // ✅ Convert ISO yyyy-MM-dd to java.util.Date
+        if (startDate != null && !startDate.isEmpty() &&
+                endDate != null && !endDate.isEmpty()) {
+
+            // Start of day
+            Date start = java.sql.Date.valueOf(startDate);
+
+            // End of day (23:59:59.999)
+            LocalDate endLocal = LocalDate.parse(endDate);
+            Date end = Date.from(endLocal.atTime(23, 59, 59, 999_000_000)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant());
+
+            query.addCriteria(Criteria.where("monTrnsDetailDTO.trnsDt").gte(start).lte(end));
+        }
+
+        query.with(Sort.by(Sort.Direction.DESC, "monTrnsDetailDTO.trnsDt"));
+        return mongodb.find(query, MonTrnsDTO.class, colNm);
+    }
+
+    @Override
+    public List<AggregationResultDTO> monTotalByType(String userId) throws Exception {
+        MatchOperation match = match(Criteria.where("userId").is(userId));
+
+        // Convert totNm (String) to number
+        AddFieldsOperation addFields = AddFieldsOperation.addField("amount")
+                .withValue(ConvertOperators.ToDouble.toDouble("$monTrnsDetailDTO.totNm"))
+                .build();
+
+        GroupOperation group = group("yrMon", "catType")
+                .sum("amount").as("total");
+
+        ProjectionOperation project = project()
+                .and("_id.yrMon").as("yrMon")
+                .and("_id.catType").as("catType")
+                .and("total").as("total");
+
+        Aggregation agg = newAggregation(match, addFields, group, project);
+        return mongodb.aggregate(agg, colNm, AggregationResultDTO.class).getMappedResults();
+    }
+
+    @Override
+    public List<AggregationResultDTO> monIncomeExpense(String userId) throws Exception {
+        MatchOperation match = match(Criteria.where("userId").is(userId));
+
+        GroupOperation group = group("yrMon", "catType")
+                .sum("monTrnsDetailDTO.totNm").as("amount");
+
+        GroupOperation pivot = group("_id.yrMon")
+                .sum(ConditionalOperators.when(ComparisonOperators.valueOf("_id.catType").equalToValue("수입")).then("amount").otherwise(0)).as("income")
+                .sum(ConditionalOperators.when(ComparisonOperators.valueOf("_id.catType").equalToValue("지출")).then("amount").otherwise(0)).as("expense");
+
+        ProjectionOperation project = project()
+                .and("_id").as("yrMon")
+                .and("income").as("income")
+                .and("expense").as("expense");
+
+        Aggregation agg = newAggregation(match, group, pivot, project);
+
+        return mongodb.aggregate(agg, colNm, AggregationResultDTO.class).getMappedResults();
+    }
+
+    @Override
+    public List<AggregationResultDTO> monthlyCategoryStack(String userId) throws Exception {
+        MatchOperation match = match(Criteria.where("userId").is(userId));
+
+        AddFieldsOperation addFields = AddFieldsOperation.addField("amount")
+                .withValue(ConvertOperators.ToDouble.toDouble("$monTrnsDetailDTO.totNm"))
+                .build();
+
+        GroupOperation group = group("yrMon", "catType", "monTrnsDetailDTO.catNm")
+                .sum("amount").as("total");
+
+        ProjectionOperation project = project()
+                .and("_id.yrMon").as("yrMon")
+                .and("_id.catType").as("catType")
+                .and("_id.catNm").as("catNm")
+                .and("total").as("total");
+
+        Aggregation agg = newAggregation(match, addFields, group, project);
+        return mongodb.aggregate(agg, colNm, AggregationResultDTO.class).getMappedResults();
+    }
+
+
 }
