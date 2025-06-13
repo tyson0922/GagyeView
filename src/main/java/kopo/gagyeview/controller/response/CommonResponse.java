@@ -65,4 +65,12 @@ public class CommonResponse<T> {
                 ));
     }
 
+    public static <T> CommonResponse<T> success(T data) {
+        return CommonResponse.<T>builder()
+                .httpStatus(HttpStatus.OK)
+                .message("success")
+                .data(data)
+                .build();
+    }
+
 }

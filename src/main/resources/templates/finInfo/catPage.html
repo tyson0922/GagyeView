@@ -24,6 +24,8 @@
     <!-- map.css -->
     <link rel="stylesheet" href="/css/pages/map.css">
 
+    <link rel="stylesheet" href="/css/pages/catPage.css">
+
 
     <!--====== Bootstrap js ======-->
     <!--    <script type="text/javascript" src="/js/bootstrap/bootstrap.bundle.min.js"></script>-->
@@ -45,7 +47,7 @@
     <script type="text/javascript" src="/js/jquery/jquery.serializeObject.min.js"></script>
 
     <!-- bnkInfo.js -->
-    <script type="text/javascript" src="/js/pages/bnkInfo.js"></script>
+    <script type="text/javascript" src="/js/pages/catPage.js"></script>
     <title>은행정보</title>
 </head>
 <body>
@@ -131,68 +133,106 @@
 </section>
 <!--====== NAVBAR ONE PART ENDS ======-->
 <!--====== MainSection PART Start ======-->
+<!--====== User Categories Section Start ======-->
 <section class="main-section" style="padding: 0 0;">
     <div class="container">
         <section class="card-area">
             <div class="container">
                 <div class="row justify-content-center">
 
-
                     <!-- 카드 리스트 컨테이너 -->
                     <div class="col-lg-12">
-                        <div id="bankListContainer" class="d-flex flex-row flex-wrap justify-content-center gap-3">
 
-                            <!-- 반복되는 카드 -->
-                            <div th:each="bank : ${userBanks}" class="single-card card-style-one" style="width: 250px;">
-                                <div class="card-content d-flex flex-column justify-content-between"
-                                     style="height: 100%;">
-                                    <div class="text-start">
-                                        <h5 th:text="${bank.bnkNm}">은행 이름</h5>
-                                        <p><strong>현재 금액:</strong> <span th:text="${bank.curNum}">0</span>원</p>
-                                    </div>
-                                    <div class="text-end mt-2">
-                                        <button class="btn btn-sm btn-outline-danger"
-                                                th:data-bnk="${bank.bnkNm}"
-                                                onclick="deleteBank(this)">삭제
-                                        </button>
 
-                                        <!--                                        <button class="btn btn-sm btn-outline-warning"-->
-                                        <!--                                                th:data-bnk="${bank.bnkNm}"-->
-                                        <!--                                                onclick="editBank(this)">수정</button>-->
-                                        <!-- ✅ 수정 버튼: iniNum까지 넘기도록 수정 -->
-                                        <button class="btn btn-sm btn-outline-warning"
-                                                th:data-bnk="${bank.bnkNm}"
-                                                th:data-ini="${bank.iniNum}"
-                                                th:data-cur="${bank.curNum}"
-                                                onclick="openEditForm(this)">수정
-                                        </button>
+                        <div class="container mt-4">
+                            <!-- Tabs -->
+                            <ul class="nav nav-tabs justify-content-center" id="catTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="income-tab" data-bs-toggle="tab" data-bs-target="#income"
+                                            type="button" role="tab" aria-controls="income" aria-selected="true">
+                                        수입
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="expense-tab" data-bs-toggle="tab" data-bs-target="#expense"
+                                            type="button" role="tab" aria-controls="expense" aria-selected="false">
+                                        지출
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <!-- Tab Contents -->
+                            <div class="tab-content mt-4" id="catTabContent">
+                                <!-- 수입 탭 -->
+                                <div class="tab-pane fade show active" id="income" role="tabpanel" aria-labelledby="income-tab">
+                                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                                        <div th:each="cat : ${catList}"
+                                             th:if="${cat != null and cat.catType == '수입'}"
+                                             class="single-card card-style-one" style="width: 250px;">
+                                            <div class="card-content d-flex flex-column justify-content-between" style="height: 100%;">
+                                                <div class="text-start">
+                                                    <h5 th:text="${cat.catNm}">카테고리 이름</h5>
+                                                    <p><strong>유형:</strong> <span th:text="${cat.catType}">수입</span></p>
+                                                </div>
+                                                <div class="text-end mt-2">
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                            th:attr="data-nm=${cat.catNm}, data-type=${cat.catType}"
+                                                            onclick="deleteCategory(this)">삭제</button>
+                                                    <button class="btn btn-sm btn-outline-warning"
+                                                            th:attr="data-nm=${cat.catNm}, data-type=${cat.catType}"
+                                                            onclick="openEditForm(this)">수정</button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-
-                        </div>
-                        <!-- 계좌 등록 카드 (첫 번째 카드로 추가) -->
-                        <div class="d-flex justify-content-center my-1">
-                            <div id="addCard" class="single-card card-style-one text-center " style="width: 250px;">
-                                <div class="card-content">
-                                    <h4 class="card-title">계좌 추가</h4>
-                                    <form id="bankAddForm" class="form-style form-style-five">
-                                        <div class="form-input mt-4">
-                                            <label>은행 이름</label>
-                                            <div class="input-items default">
-                                                <input type="text" name="bnkNm" placeholder="은행 이름" required/>
-                                                <iconify-icon icon="material-symbols:account-balance-rounded"
-                                                              class="input-icon"></iconify-icon>
+                                <!-- 지출 탭 -->
+                                <div class="tab-pane fade" id="expense" role="tabpanel" aria-labelledby="expense-tab">
+                                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                                        <div th:each="cat : ${catList}"
+                                             th:if="${cat != null and cat.catType == '지출'}"
+                                             class="single-card card-style-one" style="width: 250px;">
+                                            <div class="card-content d-flex flex-column justify-content-between" style="height: 100%;">
+                                                <div class="text-start">
+                                                    <h5 th:text="${cat.catNm}">카테고리 이름</h5>
+                                                    <p><strong>유형:</strong> <span th:text="${cat.catType}">지출</span></p>
+                                                </div>
+                                                <div class="text-end mt-2">
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                            th:attr="data-nm=${cat.catNm}, data-type=${cat.catType}"
+                                                            onclick="deleteCategory(this)">삭제</button>
+                                                    <button class="btn btn-sm btn-outline-warning"
+                                                            th:attr="data-nm=${cat.catNm}, data-type=${cat.catType}"
+                                                            onclick="openEditForm(this)">수정</button>
+                                                </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- 새 카테고리 추가 카드 -->
+                        <div class="d-flex justify-content-center my-1">
+                            <div id="addCard" class="single-card card-style-one text-center" style="width: 250px;">
+                                <div class="card-content">
+                                    <h4 class="card-title">카테고리 추가</h4>
+                                    <form id="catAddForm" class="form-style form-style-five">
+                                        <div class="form-input mt-4">
+                                            <label>카테고리 이름</label>
+                                            <input type="text" name="catNm" class="form-control" placeholder="예: 식비" required />
                                         </div>
 
                                         <div class="form-input mt-4">
-                                            <label>현재 금액</label>
+                                            <label>카테고리 유형</label>
                                             <div class="input-items default">
-                                                <input type="number" name="curNum" placeholder="금액 (숫자)" min="0"
-                                                       step="1000" required/>
-                                                <i class="lni lni-coin input-icon"></i>
+                                                <select name="catType" class="form-select" required>
+                                                    <option value="">선택</option>
+                                                    <option value="지출">지출</option>
+                                                    <option value="수입">수입</option>
+                                                </select>
                                             </div>
                                         </div>
 
@@ -208,37 +248,24 @@
                             </div>
                         </div>
 
-                        <!-- 계좌 수정 카드 -->
+                        <!-- 수정 카드 -->
                         <div class="d-flex justify-content-center my-1">
-                            <div id="editCard" class="single-card card-style-one text-center"
-                                 style="width: 250px; display: none;">
+                            <div id="editCard" class="single-card card-style-one text-center" style="width: 250px; display: none;">
                                 <div class="card-content">
-                                    <h4 class="card-title">계좌 수정</h4>
-                                    <form id="bankEditForm" class="form-style form-style-five">
+                                    <h4 class="card-title">카테고리 수정</h4>
+                                    <form id="catEditForm" class="form-style form-style-five">
                                         <div class="form-input mt-4">
-                                            <label>은행 이름</label>
-                                            <div class="input-items default">
-                                                <input type="text" name="bnkNm" readonly/>
-                                                <iconify-icon icon="material-symbols:account-balance-rounded"
-                                                              class="input-icon"></iconify-icon>
-                                            </div>
+                                            <label>카테고리 이름</label>
+                                            <input type="text" name="catNm" class="form-control" placeholder="예: 식비" required />
                                         </div>
 
                                         <div class="form-input mt-4">
-                                            <label>초기 금액</label>
+                                            <label>카테고리 유형</label>
                                             <div class="input-items default">
-                                                <input type="number" name="iniNum" placeholder="초기 금액" min="0"
-                                                       step="1000" required/>
-                                                <i class="lni lni-coin input-icon"></i>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-input mt-4">
-                                            <label>현재 금액</label>
-                                            <div class="input-items default">
-                                                <input type="number" name="curNum" placeholder="현재 금액" min="0"
-                                                       step="1000" required/>
-                                                <i class="lni lni-coin input-icon"></i>
+                                                <select name="catType" class="form-select" required>
+                                                    <option value="지출">지출</option>
+                                                    <option value="수입">수입</option>
+                                                </select>
                                             </div>
                                         </div>
 
@@ -255,16 +282,29 @@
                                             </ul>
                                         </div>
                                     </form>
+
+
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                </div>
+                        <!-- Bottom Action Row -->
+                        <div class="d-flex justify-content-between mt-4 px-4">
+                            <!-- Back Button -->
+                            <button class="btn btn-outline-secondary" onclick="window.history.back()">뒤로가기</button>
+
+                            <!-- Reset Button -->
+                            <button class="btn btn-outline-danger" onclick="resetToDefaultCats()">기본 카테고리로 초기화</button>
+                        </div>
+
+                    </div> <!-- col-lg-12 -->
+                </div> <!-- row -->
             </div>
         </section>
     </div>
 </section>
+<!--====== User Categories Section End ======-->
+
 
 <!--====== MainSection PART End ======-->
 

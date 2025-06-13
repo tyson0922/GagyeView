@@ -5,6 +5,7 @@ import kopo.gagyeview.controller.response.CommonResponse;
 import kopo.gagyeview.dto.ExistsYnDTO;
 import kopo.gagyeview.dto.SweetAlertMsgDTO;
 import kopo.gagyeview.dto.UserInfoDTO;
+import kopo.gagyeview.service.ICatService;
 import kopo.gagyeview.service.IUserInfoService;
 import kopo.gagyeview.util.CmmUtil;
 import kopo.gagyeview.util.EncryptUtil;
@@ -27,6 +28,7 @@ import java.util.Optional;
 public class UserInfoController {
 
     private final IUserInfoService userInfoService;
+    private final ICatService catService;
 
     /**
      * 회원가입 화면으로 이동
@@ -331,6 +333,8 @@ public class UserInfoController {
             log.info("회원 가입 result: {}", result);
 
             if (result == 1) {
+
+                catService.initUserCatFromDefault(userId);
 
                 samTitle = "회원가입 성공";
                 samText = "회원가입이 완료되었습니다. 로그인해주세요.";

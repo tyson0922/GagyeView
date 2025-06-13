@@ -24,5 +24,22 @@
         WHERE USER_ID = #{userId}
     </select>
 
+    <delete id="deleteUserBank" parameterType="UserBnkDTO">
+        DELETE FROM USER_BNK
+        WHERE USER_ID = #{userId}
+          AND BNK_NM = #{bnkNm}
+    </delete>
+
+    <update id="updateUserBank" parameterType="UserBnkDTO">
+        UPDATE USER_BNK
+        SET
+            INI_NUM = #{iniNum},
+            CUR_NUM = #{curNum},
+            CHG_ID = #{chgId},
+            CHG_DT = NOW()
+        WHERE USER_ID = #{userId}
+          AND BNK_NM = #{bnkNm}
+    </update>
+
 </mapper>
 

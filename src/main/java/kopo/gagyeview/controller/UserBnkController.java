@@ -113,6 +113,67 @@ public class UserBnkController {
         return "finInfo/bnkInfo";
     }
 
+    /**
+     * 계좌 삭제 요청 처리 (AJAX)
+     */
+    @ResponseBody
+    @PostMapping("/deleteUserBnk")
+    public ResponseEntity<? extends CommonResponse<?>> deleteUserBnk(
+            @RequestBody UserBnkDTO pDTO, HttpSession session) throws Exception {
+
+        log.info("{}.deleteUserBnk Start!", this.getClass().getName());
+
+        String userId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
+        if (userId.isEmpty()) {
+            SweetAlertMsgDTO samDTO = SweetAlertMsgDTO.fail("세션 만료", "로그인을 다시 진행해주세요.");
+            return ResponseEntity.ok(CommonResponse.of(HttpStatus.UNAUTHORIZED, "fail", samDTO));
+        }
+
+        pDTO.setUserId(userId); // 본인 계좌만 삭제 가능하게
+
+        int result = userBnkService.deleteUserBank(pDTO);
+
+        SweetAlertMsgDTO samDTO;
+        if (result > 0) {
+            samDTO = SweetAlertMsgDTO.success("삭제 완료", "계좌가 성공적으로 삭제되었습니다.");
+        } else {
+            samDTO = SweetAlertMsgDTO.fail("삭제 실패", "계좌 삭제에 실패했습니다.");
+        }
+
+        log.info("{}.deleteUserBnk End!", this.getClass().getName());
+        return ResponseEntity.ok(CommonResponse.success(samDTO));
+
+    }
+
+    @ResponseBody
+    @PostMapping("/updateUserBnk")
+    public ResponseEntity<? extends CommonResponse<?>> updateUserBnk(
+            @RequestBody UserBnkDTO pDTO, HttpSession session) throws Exception {
+
+        log.info("{}.updateUserBnk Start!", this.getClass().getName());
+
+        String userId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
+        if (userId.isEmpty()) {
+            SweetAlertMsgDTO samDTO = SweetAlertMsgDTO.fail("세션 만료", "로그인을 다시 진행해주세요.");
+            return ResponseEntity.ok(CommonResponse.of(HttpStatus.UNAUTHORIZED, "fail", samDTO));
+        }
+
+        pDTO.setUserId(userId);
+        pDTO.setChgId(userId);
+
+        int result = userBnkService.updateUserBank(pDTO);
+
+        SweetAlertMsgDTO samDTO;
+        if (result > 0) {
+            samDTO = SweetAlertMsgDTO.success("수정 완료", "계좌 금액이 수정되었습니다.");
+        } else {
+            samDTO = SweetAlertMsgDTO.fail("수정 실패", "계좌 수정에 실패했습니다.");
+        }
+
+        log.info("{}.updateUserBnk End!", this.getClass().getName());
+        return ResponseEntity.ok(CommonResponse.success(samDTO));
+    }
+
 
 
 

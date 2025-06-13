@@ -26,12 +26,28 @@ public class UserBnkService implements IUserBnkService {
             return 0; // or throw exception
         }
 
+
+        // ✅ Set iniNum = curNum
+        if (pDTO.getCurNum() != null) {
+            pDTO.setIniNum(pDTO.getCurNum());
+        }
+
         return userBnkMapper.insertUserBank(pDTO);
     }
 
     @Override
     public List<UserBnkDTO> getUserBankList(String userId) throws Exception {
         return userBnkMapper.selectUserBankList(userId);
+    }
+
+    @Override
+    public int deleteUserBank(UserBnkDTO pDTO) throws Exception {
+        return userBnkMapper.deleteUserBank(pDTO);
+    }
+
+    @Override
+    public int updateUserBank(UserBnkDTO pDTO) throws Exception {
+        return userBnkMapper.updateUserBank(pDTO);
     }
 }
 

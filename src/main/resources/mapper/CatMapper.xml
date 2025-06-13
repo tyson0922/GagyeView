@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--JAVA와 연결할 Mapper 파일 설정-->
+<mapper namespace="kopo.gagyeview.persistence.mapper.ICatMapper">
+
+    <select id="countDefCat" resultType="int">
+        SELECT COUNT(*) FROM DEF_CAT
+    </select>
+
+    <insert id="insertDefCat" parameterType="DefCatDTO">
+        INSERT INTO DEF_CAT (CAT_NM, CAT_TYPE, REG_ID, REG_DT, CHG_ID, CHG_DT)
+        VALUES (#{catNm}, #{catType}, #{regId}, NOW(), #{chgId}, NOW())
+    </insert>
+
+    <select id="getDefaultCategories" resultType="DefCatDTO">
+        SELECT DEF_CAT_ID, CAT_NM, CAT_TYPE FROM DEF_CAT
+    </select>
+
+    <delete id="deleteUserCategories" parameterType="string">
+        DELETE FROM USER_CAT WHERE USER_ID = #{userId}
+    </delete>
+
+
+    <!-- 사용자 카테고리 존재 여부 확인 -->
+    <select id="existsUserCat" parameterType="UserCatDTO" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM USER_CAT
+        WHERE USER_ID = #{userId}
+          AND CAT_NM = #{catNm}
+          AND CAT_TYPE = #{catType}
+    </select>
+
+    <!-- 사용자 카테고리 삽입 -->
+    <insert id="insertUserCat" parameterType="UserCatDTO">
+        INSERT INTO USER_CAT (
+            USER_ID, CAT_NM, CAT_TYPE,
+            REG_ID, REG_DT, CHG_ID, CHG_DT
+        )
+        VALUES (
+                   #{userId}, #{catNm}, #{catType},
+                   #{userId}, NOW(), #{userId}, NOW()
+               )
+    </insert>
+
+    <select id="getUserCategories" parameterType="string" resultType="UserCatDTO">
+        SELECT CAT_TYPE, CAT_NM
+        FROM USER_CAT
+        WHERE USER_ID = #{userId}
+        ORDER BY CAT_TYPE, CAT_NM
+    </select>
+
+    <update id="updateUserCat" parameterType="UserCatDTO">
+        UPDATE USER_CAT
+        SET
+            CAT_NM = #{catNm},
+            CAT_TYPE = #{catType},
+            CHG_ID = #{chgId},
+            CHG_DT = NOW()
+        WHERE USER_ID = #{userId}
+          AND CAT_NM = #{originalCatNm}
+          AND CAT_TYPE = #{originalCatType}
+    </update>
+
+    <delete id="deleteUserCat" parameterType="UserCatDTO">
+        DELETE FROM USER_CAT
+        WHERE USER_ID = #{userId}
+          AND CAT_NM = #{catNm}
+          AND CAT_TYPE = #{catType}
+    </delete>
+</mapper>

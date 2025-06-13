@@ -2,8 +2,10 @@ package kopo.gagyeview.service.impl;
 
 import kopo.gagyeview.dto.AggregationResultDTO;
 import kopo.gagyeview.dto.MonTrnsDTO;
+import kopo.gagyeview.dto.UserCatDTO;
 import kopo.gagyeview.persistence.repository.AbstractMongoDBCommon;
 import kopo.gagyeview.persistence.repository.IFinInfoMapper;
+import kopo.gagyeview.service.ICatService;
 import kopo.gagyeview.service.IFinInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import java.util.List;
 public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoService {
 
     private final IFinInfoMapper finInfoMapper;
+    private final ICatService catService;
     private final MongoTemplate mongodb;
 
     // 사용할 컬렉션 이름
@@ -40,6 +43,17 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
         }
 
         int res = finInfoMapper.insertTrns(pDTO);
+
+
+        // ✅ 사용자 카테고리 동기화
+        UserCatDTO catDTO = new UserCatDTO();
+        catDTO.setUserId(pDTO.userId());
+        catDTO.setCatNm(pDTO.monTrnsDetailDTO().catNm());
+        catDTO.setCatType(pDTO.catType());
+        catDTO.setRegId(pDTO.userId());
+        catDTO.setChgId(pDTO.userId());
+
+        catService.syncUserCat(catDTO);
 
         log.info("{}.insertTrns End!", this.getClass().getName());
         return res;

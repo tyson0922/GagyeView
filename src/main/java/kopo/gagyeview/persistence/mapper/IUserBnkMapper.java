@@ -13,4 +13,8 @@ public interface IUserBnkMapper {
     int checkDuplicate(UserBnkDTO pDTO); // Optional: Check if this bank already exists for the user
 
     List<UserBnkDTO> selectUserBankList(String userId);
+
+    int deleteUserBank(UserBnkDTO pDTO) throws Exception;
+
+    int updateUserBank(UserBnkDTO pDTO) throws Exception;
 }
