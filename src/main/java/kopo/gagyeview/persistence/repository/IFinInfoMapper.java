@@ -40,6 +40,8 @@ public interface IFinInfoMapper {
      */
     int updateTrns(MonTrnsDTO pDTO);
 
+    MonTrnsDTO getTrnsById(String id);
+
     List<MonTrnsDTO> getTrnsByDateRange(String userId, String startDate, String endDate) throws Exception;
 
     List<AggregationResultDTO> monTotalByType(String userId) throws Exception;

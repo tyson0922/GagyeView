@@ -42,8 +42,6 @@
     <script type="text/javascript" src="/js/alert/showPresetToast.js"></script>
 
 
-
-
     <script type="text/javascript" src="/js/jquery/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="/js/jquery/jquery.serializeObject.min.js"></script>
 
@@ -133,88 +131,143 @@
 </section>
 <!--====== NAVBAR ONE PART ENDS ======-->
 <!--====== MainSection PART Start ======-->
-<section class="main-section">
-    <div class="container">
-        <!--    <div class="container" style="margin-top:50px;">-->
-        <!--        <h1>똑똑한 소비의 시작, 가계뷰와 함께</h1>-->
 
-        <!--        <p>This is your hero or main content section.</p>-->
-        <!--====== CARD PART START ======-->
-        <section class="card-area">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <!-- col -->
-                    <div class="col-lg-8 col-md-9 col-sm-11">
-                        <div class="single-card card-style-one" style="max-height: 600px; overflow-y: auto; margin-top: 0 !important;">
 
-                            <div class="card-content">
-                                <h4 class="card-title">
-                                    <a href="javascript:void(0)">금융 내역</a>
-                                </h4>
-                                <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between">
-                                    <p class="text mb-2 mb-sm-0" style="width: 100%;">
-                                        기간별 지출 및 수입 내역을 확인하고 관리할 수 있습니다
-                                    </p>
+<div id="pdfWrapper">
+    <div class="pdf-title-box">
+        <h2>다운로드한 소비 분석 결과</h2>
+    </div>
+    <section class="main-section">
+        <div class="container">
+            <section class="card-area">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-10">
+                            <div class="single-card card-style-one p-3">
+
+                                <!-- 제목 -->
+                                <div class="card-content text-center mb-4">
+                                    <h4 class="card-title">금융 내역</h4>
+                                    <p>선택한 월에 대한 지출 및 수입 데이터를 확인할 수 있습니다.</p>
                                 </div>
-                            </div>
 
-                            <!-- 날짜 필터 영역 -->
-                            <form method="get" action="/finInfo/detail" class="d-flex justify-content-center align-items-center gap-3 mb-3">
-                                <label class="mb-0">시작일:</label>
-                                <input type="date" name="startDate" class="form-control form-control-sm"
-                                       style="max-width: 180px;" th:value="${startDate}" />
+                                <!-- 월 선택 -->
+                                <form method="get" action="/finInfo"
+                                      class="d-flex justify-content-center align-items-center gap-3 mb-4">
+                                    <label for="yrMon" class="mb-0">연월 선택:</label>
+                                    <input type="month" id="yrMon" name="yrMon" class="form-control form-control-sm"
+                                           style="max-width: 180px;" th:value="${selectedYrMon}"/>
+                                    <button type="submit" class="btn btn-sm caution-btn">조회</button>
+                                </form>
 
-                                <label class="mb-0">종료일:</label>
-                                <input type="date" name="endDate" class="form-control form-control-sm"
-                                       style="max-width: 180px;" th:value="${endDate}" />
+                                <!-- ✅ 상단 카드 요약 -->
+                                <div class="row text-center g-3 mb-4">
+                                    <div class="col-md-3">
+                                        <div class="bg-white rounded shadow p-3">
+                                            <h6 class="mb-1">기간 내 지출 총합</h6>
+                                            <h4>₩ <span
+                                                    th:text="${#numbers.formatInteger(totalExpense, 3, 'COMMA')}">0</span>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="bg-white rounded shadow p-3">
+                                            <h6 class="mb-1">기간 내 수입 총합</h6>
+                                            <h4>₩ <span
+                                                    th:text="${#numbers.formatInteger(totalIncome, 3, 'COMMA')}">0</span>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="bg-white rounded shadow p-3">
+                                            <h6 class="mb-1">월간 지출 총합</h6>
+                                            <h4>₩ <span th:text="${#numbers.formatInteger(monthlyExpense, 3, 'COMMA')}">0</span>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="bg-white rounded shadow p-3">
+                                            <h6 class="mb-1">월간 수입 총합</h6>
+                                            <h4>₩ <span
+                                                    th:text="${#numbers.formatInteger(monthlyIncome, 3, 'COMMA')}">0</span>
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                <button type="submit" class="btn btn-sm caution-btn">조회</button>
-                            </form>
-                            <div class="px-3">
-                                <!-- 수입/지출 도넛 차트 -->
-                                <div class="row justify-content-center my-4">
+                                <!-- ✅ 도넛 차트 (지출 / 수입) -->
+                                <div class="row text-center g-4 mb-5">
                                     <div class="col-md-6">
-                                        <div id="expenseDonut" style="width: 100%; height: 300px;"></div>
+                                        <h6>월간 지출 총합</h6>
+                                        <div id="expenseDonut"
+                                             style="width: 100%; max-width: 400px; height: 300px; margin: 0 auto;"></div>
+                                        <a class="btn btn-sm caution-btn mt-2" href="/finInfo/detail">자세히 보기</a>
                                     </div>
                                     <div class="col-md-6">
-                                        <div id="incomeDonut" style="width: 100%; height: 300px;"></div>
+                                        <h6>월간 수입 총합</h6>
+                                        <div id="incomeDonut"
+                                             style="width: 100%; max-width: 400px; height: 300px; margin: 0 auto;"></div>
+                                        <a class="btn btn-sm caution-btn mt-2" href="/finInfo/detail">자세히 보기</a>
                                     </div>
                                 </div>
 
-<!--                                &lt;!&ndash; 월별 수입/지출 비교 바 차트 &ndash;&gt;-->
-<!--                                <div class="row justify-content-center my-4">-->
-<!--                                    <div class="col-md-10">-->
-<!--                                        <div id="barChart" style="width: 100%; height: 400px;"></div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-
-                                <!-- 월별 카테고리별 수입/지출 스택 차트 -->
-                                <div class="row justify-content-center my-4">
-                                    <div class="col-md-10">
-                                        <div id="stackChart" style="width: 100%; height: 400px;"></div>
-                                    </div>
+                                <!-- ✅ 수입/지출 바 차트 -->
+                                <div class="text-center mb-5">
+                                    <h6 class="mb-2">월별 수입 / 지출 비교</h6>
+                                    <div id="barChart" style="width: 100%; height: 400px;"></div>
+                                    <a class="btn btn-sm caution-btn mt-2" href="/finInfo/detail">자세히 보기</a>
                                 </div>
+
+                                <!-- ✅ 월별 지출 스택 바 차트 -->
+                                <div class="text-center mb-5">
+                                    <h6 class="mb-2">월별 지출 내역</h6>
+                                    <div id="expenseStackChart" style="width: 100%; height: 400px;"></div>
+                                    <a class="btn btn-sm caution-btn mt-2" href="/finInfo/detail">자세히 보기</a>
+                                </div>
+
+                                <!-- ✅ 월별 수입 스택 바 차트 -->
+                                <div class="text-center mb-4">
+                                    <h6 class="mb-2">월별 수입 내역</h6>
+                                    <div id="incomeStackChart" style="width: 100%; height: 400px;"></div>
+                                    <a class="btn btn-sm caution-btn mt-2" href="/finInfo/detail">자세히 보기</a>
+                                </div>
+
+                                <!-- ✅ 추가 버튼 3개 (한 줄 정렬) -->
+                                <div class="d-flex justify-content-center gap-3 mb-5">
+                                    <a href="javascript:history.back()"
+                                       class="btn btn-sm btn-outline-secondary">뒤로가기</a>
+                                    <a href="/finInfo/detail" class="btn btn-sm btn-outline-primary">거래 내역</a>
+                                    <a href="/cat/list" class="btn btn-sm btn-outline-warning">카테고리 관리</a>
+                                    <button id="downloadBtn" class="btn btn-sm btn-outline-success">PDF로 저장</button>
+                                </div>
+
                             </div>
-
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-        <!--====== CARD PART ENDS ======-->
-    </div>
-
-</section>
-<!--====== MainSection PART End ======-->
-<!--====== 데이터 주입 (Thymeleaf to JS) ======-->
+            </section>
+        </div>
+    </section>
+</div>
+<!-- ✅ 데이터 주입 (Thymeleaf → JS 전역 객체) -->
 <script th:inline="javascript">
-    window.donutData = /*[[${donutData}]]*/ [];
-    window.barData = /*[[${barData}]]*/ [];
-    window.stackData = /*[[${stackData}]]*/ [];
+    window.donutExpenseData = /*[[${donutExpenseJson}]]*/ [];
+    window.donutIncomeData = /*[[${donutIncomeJson}]]*/ [];
+    window.monthlyIncomeExpenseData = /*[[${monthlyIncomeExpenseJson}]]*/ [];
+    window.monthlyExpenseStackData = /*[[${monthlyExpenseStackJson}]]*/ [];
+    window.monthlyIncomeStackData = /*[[${monthlyIncomeStackJson}]]*/ [];
 </script>
 
+<script th:inline="javascript">
+    console.log("✅ Thymeleaf donutExpenseData:", /*[[${donutExpenseJson}]]*/ []);
+</script>
+
+
 <!-- ECharts + JS 코드 실행 -->
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script type="text/javascript" src="/js/pages/finInfo.js"></script>
 
 </body>

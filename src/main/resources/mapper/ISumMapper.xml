@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--JAVA와 연결할 Mapper 파일 설정-->
+<mapper namespace="kopo.gagyeview.persistence.mapper.ISumMapper">
+
+    <!-- MON_SUM UPSERT -->
+    <insert id="upsertMonSum">
+        INSERT INTO MON_SUM (
+            USER_ID, YR_MON, TOT_INC, TOT_EXP, MON_BNK_UP,
+            REG_ID, REG_DT, CHG_ID, CHG_DT
+        )
+        VALUES (
+                   #{userId}, #{yrMon},
+                   CASE WHEN #{catType} = '수입' THEN #{monTrnsDetailDTO.totNm} ELSE 0 END,
+                   CASE WHEN #{catType} = '지출' THEN #{monTrnsDetailDTO.totNm} ELSE 0 END,
+                   CASE WHEN #{catType} = '수입' THEN #{monTrnsDetailDTO.totNm} ELSE -#{monTrnsDetailDTO.totNm} END,
+                   #{userId}, NOW(), #{userId}, NOW()
+               )
+        ON DUPLICATE KEY UPDATE
+                             TOT_INC = TOT_INC + CASE WHEN #{catType} = '수입' THEN #{monTrnsDetailDTO.totNm} ELSE 0 END,
+                             TOT_EXP = TOT_EXP + CASE WHEN #{catType} = '지출' THEN #{monTrnsDetailDTO.totNm} ELSE 0 END,
+                             MON_BNK_UP = MON_BNK_UP + CASE WHEN #{catType} = '수입' THEN #{monTrnsDetailDTO.totNm} ELSE -#{monTrnsDetailDTO.totNm} END,
+                             CHG_ID = #{userId},
+                             CHG_DT = NOW()
+    </insert>
+
+
+    <!-- MON_SUM DECREMENT -->
+    <update id="decrementMonSum">
+        UPDATE MON_SUM
+        SET
+            TOT_INC = TOT_INC - CASE WHEN #{catType} = '수입' THEN #{monTrnsDetailDTO.totNm} ELSE 0 END,
+            TOT_EXP = TOT_EXP - CASE WHEN #{catType} = '지출' THEN #{monTrnsDetailDTO.totNm} ELSE 0 END,
+            MON_BNK_UP = MON_BNK_UP - CASE WHEN #{catType} = '수입' THEN #{monTrnsDetailDTO.totNm}
+                                           ELSE -#{monTrnsDetailDTO.totNm} END,
+            CHG_ID = #{userId},
+            CHG_DT = NOW()
+        WHERE USER_ID = #{userId} AND YR_MON = #{yrMon}
+    </update>
+
+    <!-- MON_CAT_SUM UPSERT -->
+    <insert id="upsertMonCatSum">
+        INSERT INTO MON_CAT_SUM (USER_ID, YR_MON, CAT_TYPE, CAT_NM, CAT_NUM, CAT_PERC, REG_ID, REG_DT, CHG_ID, CHG_DT)
+        VALUES (
+                   #{userId}, #{yrMon}, #{catType}, #{monTrnsDetailDTO.catNm},
+                   #{monTrnsDetailDTO.totNm}, 0,  -- CAT_PERC to be handled later
+                   #{userId}, NOW(), #{userId}, NOW()
+               )
+            ON DUPLICATE KEY UPDATE
+                                 CAT_NUM = CAT_NUM + #{monTrnsDetailDTO.totNm},
+                                 CHG_ID = #{userId},
+                                 CHG_DT = NOW()
+    </insert>
+
+    <!-- MON_CAT_SUM DECREMENT -->
+    <update id="decrementMonCatSum">
+        UPDATE MON_CAT_SUM
+        SET
+            CAT_NUM = CAT_NUM - #{monTrnsDetailDTO.totNm},
+            CHG_ID = #{userId},
+            CHG_DT = NOW()
+        WHERE USER_ID = #{userId}
+          AND YR_MON = #{yrMon}
+          AND CAT_TYPE = #{catType}
+          AND CAT_NM = #{monTrnsDetailDTO.catNm}
+    </update>
+
+    <update id="recalculateCatPerc">
+        UPDATE MON_CAT_SUM t
+            JOIN (
+                SELECT USER_ID, YR_MON, CAT_TYPE, SUM(CAT_NUM) AS total
+                FROM MON_CAT_SUM
+                WHERE USER_ID = #{userId} AND YR_MON = #{yrMon} AND CAT_TYPE = #{catType}
+                GROUP BY USER_ID, YR_MON, CAT_TYPE
+            ) total_sum
+            ON t.USER_ID = total_sum.USER_ID
+                AND t.YR_MON = total_sum.YR_MON
+                AND t.CAT_TYPE = total_sum.CAT_TYPE
+        SET t.CAT_PERC = ROUND((t.CAT_NUM / total_sum.total) * 100, 2)
+        WHERE t.USER_ID = #{userId} AND t.YR_MON = #{yrMon} AND t.CAT_TYPE = #{catType}
+    </update>
+
+    <!-- 도넛 데이터 -->
+    <select id="getDonutByCatType" resultType="kopo.gagyeview.dto.DonutChartDTO">
+        SELECT
+            CAT_NM AS name,
+            SUM(CAT_NUM) AS value,
+            NULL AS yrMon,
+            #{catType} AS catType,
+            CAT_NM AS catNm,
+            SUM(CAT_NUM) AS total,
+            NULL AS income,
+            NULL AS expense
+        FROM MON_CAT_SUM
+        WHERE USER_ID = #{userId}
+          AND CAT_TYPE = #{catType}
+          AND YR_MON = #{yrMon}
+        GROUP BY CAT_NM
+    </select>
+
+    <!-- 바 차트 -->
+    <select id="getMonthlyIncomeExpense" resultType="BarChartDTO">
+        SELECT YR_MON AS name,
+               SUM(TOT_INC) AS income,
+               SUM(TOT_EXP) AS expense
+        FROM MON_SUM
+        WHERE USER_ID = #{userId}
+        GROUP BY YR_MON
+        ORDER BY YR_MON
+    </select>
+
+    <!-- 스택 바 차트 -->
+    <select id="getMonthlyStack" resultType="StackBarDTO">
+        SELECT
+            YR_MON AS yrMon,
+            #{catType} AS catType,  -- 수입/지출 (쿼리 매개변수로 들어온 값)
+            CAT_NM AS catNm,        -- 카테고리 이름
+            SUM(CAT_NUM) AS total
+        FROM MON_CAT_SUM
+        WHERE USER_ID = #{userId}
+          AND CAT_TYPE = #{catType}
+        GROUP BY YR_MON, CAT_NM
+        ORDER BY YR_MON
+    </select>
+
+    <!-- 총합 -->
+    <select id="getTotalAmountByType" resultType="java.math.BigDecimal">
+        SELECT SUM(CAT_NUM)
+        FROM MON_CAT_SUM
+        WHERE USER_ID = #{userId}
+          AND CAT_TYPE = #{catType}
+    </select>
+
+    <!-- 월 합계 -->
+    <select id="getMonthlyTotal" resultType="java.math.BigDecimal">
+        SELECT SUM(CAT_NUM)
+        FROM MON_CAT_SUM
+        WHERE USER_ID = #{userId}
+          AND CAT_TYPE = #{catType}
+          AND YR_MON = #{yrMon}
+    </select>
+
+</mapper>

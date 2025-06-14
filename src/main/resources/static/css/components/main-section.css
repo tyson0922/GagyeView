@@ -1,29 +1,59 @@
 html, body {
     height: 100%;
     margin: 0;
+    padding: 0;
     display: flex;
     flex-direction: column;
     text-align: center;
+    background-color: white; /* PDF 배경이 노란색일 경우 흰색으로 덮기 */
 }
 
 .navbar-area {
     flex-shrink: 0;
 }
 
-/* Make main-section fill the remaining space below navbar */
+/* ✅ main-section: PDF 캡처 호환용으로 수정 */
 .main-section {
-    flex-grow: 1;
-    background-color: #FFDC71;
-    display: flex;
-    justify-content: center;
-    padding: 40px 0; /* adds space above/below card */
-}
-
-/* Center wrapper inside main section */
-.center-wrapper {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    background-color: #FFDC71; /* 웹에선 유지 */
+    padding: 40px 20px 100px 20px;  /* 하단 여백 추가 (PDF용 시각적 안정감) */
+    box-sizing: border-box;
     width: 100%;
+    display: block !important;    /* ✅ flex 제거 */
+    overflow: visible !important; /* ✅ 잘림 방지 */
 }
 
+/* 내용 중앙 정렬 래퍼 */
+.center-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ✅ 버튼 등은 프린트 시 숨김 */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
+
+/* ✅ 그래프 요소를 중앙에 고정 */
+#expenseDonut, #incomeDonut,
+#barChart, #expenseStackChart, #incomeStackChart {
+    display: block;
+    margin: 0 auto;
+}
+
+.pdf-title-box {
+    text-align: center;
+    padding: 30px 0 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: white; /* PDF 배경 정리 */
+    color: var(--caution);
+    font-size: 20px;
+    font-weight: bold;
+}
+@media screen {
+    .pdf-title-box {
+        display: none;
+    }
+}

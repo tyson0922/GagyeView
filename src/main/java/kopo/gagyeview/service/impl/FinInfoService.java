@@ -1,8 +1,7 @@
 package kopo.gagyeview.service.impl;
 
-import kopo.gagyeview.dto.AggregationResultDTO;
-import kopo.gagyeview.dto.MonTrnsDTO;
-import kopo.gagyeview.dto.UserCatDTO;
+import kopo.gagyeview.dto.*;
+import kopo.gagyeview.persistence.mapper.ISumMapper;
 import kopo.gagyeview.persistence.repository.AbstractMongoDBCommon;
 import kopo.gagyeview.persistence.repository.IFinInfoMapper;
 import kopo.gagyeview.service.ICatService;
@@ -12,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Slf4j
@@ -21,6 +21,7 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
 
     private final IFinInfoMapper finInfoMapper;
     private final ICatService catService;
+    private final ISumMapper sumMapper;
     private final MongoTemplate mongodb;
 
     // 사용할 컬렉션 이름
@@ -55,6 +56,11 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
 
         catService.syncUserCat(catDTO);
 
+        // ✅ 요약 테이블 동기화
+        sumMapper.upsertMonSum(pDTO);
+        sumMapper.upsertMonCatSum(pDTO);
+        sumMapper.recalculateCatPerc(pDTO);
+
         log.info("{}.insertTrns End!", this.getClass().getName());
         return res;
     }
@@ -88,17 +94,42 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
     public int deleteTrnsById(String id) throws Exception {
         log.info("{}.deleteTrnsById Start!", this.getClass().getName());
 
+        MonTrnsDTO oldDTO = finInfoMapper.getTrnsById(id);
+
+        if (oldDTO != null) {
+            sumMapper.decrementMonSum(oldDTO);
+            sumMapper.decrementMonCatSum(oldDTO);
+            sumMapper.recalculateCatPerc(oldDTO);
+        }
+
         int res = finInfoMapper.deleteTrnsById(id);
 
         log.info("{}.deleteTrnsById End!", this.getClass().getName());
         return res;
     }
 
+
     @Override
     public int updateTrns(MonTrnsDTO pDTO) throws Exception {
         log.info("{}.updateTrns Start!", this.getClass().getName());
 
+        // Step 1: Get old transaction by ID
+        MonTrnsDTO oldDTO = finInfoMapper.getTrnsById(pDTO.id());
+
+        if (oldDTO != null) {
+            // Step 2: Decrement the old values from summary tables
+            sumMapper.decrementMonSum(oldDTO);
+            sumMapper.decrementMonCatSum(oldDTO);
+            sumMapper.recalculateCatPerc(oldDTO);
+        }
+
+        // Step 3: Update transaction in MongoDB
         int res = finInfoMapper.updateTrns(pDTO);
+
+        // Step 4: Add new values to summary tables
+        sumMapper.upsertMonSum(pDTO);
+        sumMapper.upsertMonCatSum(pDTO);
+        sumMapper.recalculateCatPerc(pDTO);
 
         log.info("{}.updateTrns End!", this.getClass().getName());
         return res;
@@ -115,45 +146,49 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
     }
 
     @Override
-    public List<AggregationResultDTO> monTotalByType(String userId) throws Exception {
-        log.info("monTotalByType Start - userId: {}", userId);
+    public List<DonutChartDTO> getDonutByCatType(String userId, String catType, String yrMon) throws Exception {
+        log.info("🎯 [SERVICE] getDonutByCatType() 시작 - userId: {}, catType: {}, yrMon: {}", userId, catType, yrMon);
 
-        List<AggregationResultDTO> rList = finInfoMapper.monTotalByType(userId);
+        List<DonutChartDTO> rList = sumMapper.getDonutByCatType(userId, catType, yrMon);
 
-        for (AggregationResultDTO dto : rList) {
-            log.info("[donutData] yrMon: {}, catType: {}, total: {}",
-                    dto.yrMon(), dto.catType(), dto.total());
+        if (rList == null || rList.isEmpty()) {
+            log.warn("⚠️ [SERVICE] getDonutByCatType 결과 없음 (userId: {}, catType: {}, yrMon: {})", userId, catType, yrMon);
+        } else {
+            log.info("✅ [SERVICE] getDonutByCatType 결과 건수: {}", rList.size());
+            for (DonutChartDTO dto : rList) {
+                log.debug("📌 도넛 항목 - name: {}, value: {}", dto.getName(), dto.getValue());
+            }
         }
+
+        return rList != null ? rList : List.of();
+    }
+
+    @Override
+    public List<BarChartDTO> getMonthlyIncomeExpense(String userId) throws Exception {
+        log.info("🎯 [SERVICE] getMonthlyIncomeExpense() 시작 - userId: {}", userId);
+
+        List<BarChartDTO> rList = sumMapper.getMonthlyIncomeExpense(userId);
+        log.info("✅ [SERVICE] getMonthlyIncomeExpense 결과 건수: {}", rList.size());
 
         return rList;
     }
 
     @Override
-    public List<AggregationResultDTO> monIncomeExpense(String userId) throws Exception {
-        log.info("monIncomeExpense Start - userId: {}", userId);
-
-        List<AggregationResultDTO> rList = finInfoMapper.monIncomeExpense(userId);
-
-        for (AggregationResultDTO dto : rList) {
-            log.info("[barData] yrMon: {}, income: {}, expense: {}",
-                    dto.yrMon(), dto.income(), dto.expense());
-        }
-
-        return rList;
+    public List<StackBarDTO> getMonthlyStack(String userId, String catType) throws Exception {
+        log.info("getMonthlyStack - userId: {}, catType: {}", userId, catType);
+        return sumMapper.getMonthlyStack(userId, catType);
     }
 
     @Override
-    public List<AggregationResultDTO> monthlyCategoryStack(String userId) throws Exception {
-        log.info("monthlyCategoryStack Start - userId: {}", userId);
+    public BigDecimal getTotalAmountByType(String userId, String catType) throws Exception {
+        log.info("getTotalAmountByType - userId: {}, catType: {}", userId, catType);
+        return sumMapper.getTotalAmountByType(userId, catType);
+    }
 
-        List<AggregationResultDTO> rList = finInfoMapper.monthlyCategoryStack(userId);
-
-        for (AggregationResultDTO dto : rList) {
-            log.info("[stackData] yrMon: {}, catNm: {}, total: {}",
-                    dto.yrMon(), dto.catNm(), dto.total());
-        }
-
-        return rList;
+    @Override
+    public BigDecimal getMonthlyTotal(String userId, String catType, String yrMon) throws Exception {
+        log.info("getMonthlyTotal - userId: {}, catType: {}, yrMon: {}", userId, catType, yrMon);
+        return sumMapper.getMonthlyTotal(userId, catType, yrMon);
     }
 
 }

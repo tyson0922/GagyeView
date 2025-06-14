@@ -1,8 +1,11 @@
 package kopo.gagyeview.service;
 
-import kopo.gagyeview.dto.AggregationResultDTO;
+import kopo.gagyeview.dto.BarChartDTO;
+import kopo.gagyeview.dto.DonutChartDTO;
 import kopo.gagyeview.dto.MonTrnsDTO;
+import kopo.gagyeview.dto.StackBarDTO;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface IFinInfoService {
@@ -45,9 +48,28 @@ public interface IFinInfoService {
 
     List<MonTrnsDTO> getTrnsByDateRange(String userId, String startDate, String endDate) throws Exception;
 
-    List<AggregationResultDTO> monTotalByType(String userId) throws Exception;
+    /**
+     * 도넛 차트를 위한 카테고리별 합계 조회
+     */
+    List<DonutChartDTO> getDonutByCatType(String userId, String catType, String yrMon) throws Exception;
 
-    List<AggregationResultDTO> monIncomeExpense(String userId) throws Exception;
+    /**
+     * 월별 수입/지출 합계 조회 (막대 차트용)
+     */
+    List<BarChartDTO> getMonthlyIncomeExpense(String userId) throws Exception;
 
-    List<AggregationResultDTO> monthlyCategoryStack(String userId) throws Exception;
+    /**
+     * 월별 카테고리별 합계 조회 (스택 바 차트용)
+     */
+    List<StackBarDTO> getMonthlyStack(String userId, String catType) throws Exception;
+
+    /**
+     * 전체 수입 또는 지출 총합 조회 (요약 카드용)
+     */
+    BigDecimal getTotalAmountByType(String userId, String catType) throws Exception;
+
+    /**
+     * 특정 월의 수입 또는 지출 총합 조회 (요약 카드용)
+     */
+    BigDecimal getMonthlyTotal(String userId, String catType, String yrMon) throws Exception;
 }

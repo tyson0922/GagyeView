@@ -26,17 +26,29 @@ $(document).ready(function(){
         if (currentLocationMarker) {
             currentLocationMarker.setMap(null);
         }
+        const currentLocationImage = new kakao.maps.MarkerImage(
+            '/images/currentMarker.svg', // blue version
+            new kakao.maps.Size(40, 40)
+        );
 
         currentLocationMarker = new kakao.maps.Marker({
             map: map,
             position: latLng,
-            title: "현재 위치"
+            title: "현재 위치",
+            image: currentLocationImage
         });
     }
 
+    let watchId = null;
+
     function startLocationTracking() {
         if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(
+            // 이미 추적 중이면 중단
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+
+            watchId = navigator.geolocation.watchPosition(
                 updateCurrentLocation,
                 function (error) {
                     console.error("Geolocation watch error:", error);
@@ -110,13 +122,15 @@ $(document).ready(function(){
                         `;
                         rListElement.append(html);
 
+                        const martMarkerImage = new kakao.maps.MarkerImage(
+                            '/images/martMarker.svg', // red version
+                            new kakao.maps.Size(40, 40)
+                        );
+
                         const marker = new kakao.maps.Marker({
                             map: map,
-                            position: new kakao.maps.LatLng(mart.y, mart.x)
-                        });
-
-                        kakao.maps.event.addListener(marker, 'click', function() {
-                            map.setCenter(marker.getPosition());
+                            position: new kakao.maps.LatLng(mart.y, mart.x),
+                            image: martMarkerImage
                         });
 
                         markers.push(marker);

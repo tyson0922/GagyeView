@@ -102,6 +102,12 @@ public class FinInfoMapper implements IFinInfoMapper {
     }
 
     @Override
+    public MonTrnsDTO getTrnsById(String id) {
+        Query query = new Query(Criteria.where("_id").is(id));
+        return mongodb.findOne(query, MonTrnsDTO.class, "MON_TRNS");
+    }
+
+    @Override
     public List<MonTrnsDTO> getTrnsByDateRange(String userId, String startDate, String endDate) throws Exception {
         Query query = new Query();
 

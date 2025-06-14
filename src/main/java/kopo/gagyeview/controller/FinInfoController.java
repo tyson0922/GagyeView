@@ -1,11 +1,9 @@
 package kopo.gagyeview.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
 import kopo.gagyeview.controller.response.CommonResponse;
-import kopo.gagyeview.dto.AggregationResultDTO;
-import kopo.gagyeview.dto.MonTrnsDTO;
-import kopo.gagyeview.dto.MonTrnsDetailDTO;
-import kopo.gagyeview.dto.SweetAlertMsgDTO;
+import kopo.gagyeview.dto.*;
 import kopo.gagyeview.service.IFinInfoService;
 import kopo.gagyeview.util.CmmUtil;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
@@ -29,8 +28,10 @@ public class FinInfoController {
 
     private final IFinInfoService finInfoService;
 
-    @GetMapping(value="")
-    public String finInfoPage(HttpSession session, Model model) {
+    @GetMapping(value = "")
+    public String finInfoPage(@RequestParam(required = false) String yrMon,
+                              HttpSession session,
+                              Model model) {
         log.info("{}.finInfoPage Start!", this.getClass().getName());
 
         String userId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
@@ -40,31 +41,69 @@ public class FinInfoController {
             return "redirect:/";
         }
 
+        if (yrMon == null || yrMon.isEmpty()) {
+            LocalDate now = LocalDate.now();
+            yrMon = now.format(DateTimeFormatter.ofPattern("yyyy-MM"));
+        }
+
         log.info("Logged in userId: {}", userId);
 
         try {
-            // 서비스 호출
-            List<AggregationResultDTO> donutData = finInfoService.monTotalByType(userId);
-            List<AggregationResultDTO> barData = finInfoService.monIncomeExpense(userId);
-            List<AggregationResultDTO> stackData = finInfoService.monthlyCategoryStack(userId);
+            List<DonutChartDTO> donutExpenseData = finInfoService.getDonutByCatType(userId, "지출", yrMon);
+            List<DonutChartDTO> donutIncomeData = finInfoService.getDonutByCatType(userId, "수입", yrMon);
 
-            log.info("donutData size: {}", donutData.size());
-            log.info("barData size: {}", barData.size());
-            log.info("stackData size: {}", stackData.size());
+            List<BarChartDTO> monthlyIncomeExpenseData = finInfoService.getMonthlyIncomeExpense(userId);
+            List<StackBarDTO> monthlyExpenseStackData = finInfoService.getMonthlyStack(userId, "지출");
+            List<StackBarDTO> monthlyIncomeStackData = finInfoService.getMonthlyStack(userId, "수입");
 
-            // 모델에 데이터 담기
-            model.addAttribute("donutData", donutData);
-            model.addAttribute("barData", barData);
-            model.addAttribute("stackData", stackData);
+            BigDecimal totalExpense = finInfoService.getTotalAmountByType(userId, "지출");
+            BigDecimal totalIncome = finInfoService.getTotalAmountByType(userId, "수입");
+
+            BigDecimal monthlyExpense = finInfoService.getMonthlyTotal(userId, "지출", yrMon);
+            BigDecimal monthlyIncome = finInfoService.getMonthlyTotal(userId, "수입", yrMon);
+
+            log.info("📊 donutExpenseData (지출) 건수: {}", donutExpenseData.size());
+            for (DonutChartDTO dto : donutExpenseData) {
+                log.debug("   ↳ name: {}, value: {}", dto.getName(), dto.getValue());
+            }
+
+            log.info("📊 donutIncomeData (수입) 건수: {}", donutIncomeData.size());
+            for (DonutChartDTO dto : donutIncomeData) {
+                log.debug("   ↳ name: {}, value: {}", dto.getName(), dto.getValue());
+            }
+
+            log.info("📊 monthlyIncomeExpenseData 건수: {}", monthlyIncomeExpenseData.size());
+            log.info("📊 monthlyExpenseStackData 건수: {}", monthlyExpenseStackData.size());
+            log.info("📊 monthlyIncomeStackData 건수: {}", monthlyIncomeStackData.size());
+
+            log.info("💰 총 지출 (totalExpense): {}", totalExpense);
+            log.info("💰 총 수입 (totalIncome): {}", totalIncome);
+            log.info("📅 월 지출 ({}): {}", yrMon, monthlyExpense);
+            log.info("📅 월 수입 ({}): {}", yrMon, monthlyIncome);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            model.addAttribute("selectedYrMon", yrMon);
+
+            model.addAttribute("donutExpenseJson", objectMapper.writeValueAsString(donutExpenseData));
+            model.addAttribute("donutIncomeJson", objectMapper.writeValueAsString(donutIncomeData));
+            model.addAttribute("monthlyIncomeExpenseJson", objectMapper.writeValueAsString(monthlyIncomeExpenseData));
+            model.addAttribute("monthlyExpenseStackJson", objectMapper.writeValueAsString(monthlyExpenseStackData));
+            model.addAttribute("monthlyIncomeStackJson", objectMapper.writeValueAsString(monthlyIncomeStackData));
+
+            model.addAttribute("totalExpense", totalExpense);
+            model.addAttribute("totalIncome", totalIncome);
+            model.addAttribute("monthlyExpense", monthlyExpense);
+            model.addAttribute("monthlyIncome", monthlyIncome);
 
         } catch (Exception e) {
-            log.error("finInfoPage data load error: {}", e.getMessage());
+            log.error("finInfoPage data load error", e);
         }
+
         log.info("{}.finInfoPage End!", this.getClass().getName());
-
-
         return "finInfo/finInfo";
     }
+
 
     @GetMapping("/detail")
     public String finInfoPageDetail(
