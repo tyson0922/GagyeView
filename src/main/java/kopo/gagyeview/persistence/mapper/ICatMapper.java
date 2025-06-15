@@ -24,4 +24,6 @@ public interface ICatMapper {
     // ✅ 사용자 카테고리 수정 및 삭제
     int updateUserCat(UserCatDTO pDTO);
     int deleteUserCat(UserCatDTO pDTO);
+
+    List<String> selectCatNamesByUserId(String userId);
 }

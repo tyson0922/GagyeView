@@ -37,6 +37,13 @@ function showPresetToast(type, customTitle = '', customText = '', callback){
             position: 'top-end',
             showConfirmButton: false,
             timer: 3000
+        },
+        info: {
+            icon: 'info',
+            toast: true,
+            position: 'center',
+            showConfirmButton: true,
+            confirmButtonText: '확인'
         }
     };
 
