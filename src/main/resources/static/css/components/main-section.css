@@ -20,6 +20,8 @@ html, body {
     width: 100%;
     display: block !important;    /* ✅ flex 제거 */
     overflow: visible !important; /* ✅ 잘림 방지 */
+
+    flex-grow: 1;
 }
 
 /* 내용 중앙 정렬 래퍼 */

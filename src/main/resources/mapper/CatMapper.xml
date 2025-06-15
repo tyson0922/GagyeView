@@ -68,4 +68,10 @@
           AND CAT_NM = #{catNm}
           AND CAT_TYPE = #{catType}
     </delete>
+
+    <select id="selectCatNamesByUserId" parameterType="string" resultType="string">
+        SELECT DISTINCT CAT_NM
+        FROM USER_CAT
+        WHERE USER_ID = #{userId}
+    </select>
 </mapper>

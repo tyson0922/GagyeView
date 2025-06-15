@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
         series: [{
             name: '지출',
             type: 'pie',
-            radius: '50%',
+            radius: ['40%', '70%'],
             data: toDonutData(window.donutExpenseData),
             emphasis: {
                 itemStyle: {
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
         series: [{
             name: '수입',
             type: 'pie',
-            radius: '50%',
+            radius: ['40%', '70%'],
             data: toDonutData(window.donutIncomeData),
             emphasis: {
                 itemStyle: {
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => {
             html2canvas(element, {
                 scale: 3,
-                scrollY: 0,            // ✅ 스크롤 위치 무시
+                scrollY: 0,
                 useCORS: true,
                 allowTaint: true
             }).then(canvas => {
@@ -144,15 +144,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const pageWidth = 210;
                 const pageHeight = 297;
-
                 const imgWidth = pageWidth;
                 const imgHeight = canvas.height * imgWidth / canvas.width;
 
-                // ✅ Option 2: 여백 없이 꽉 채우기 — y를 0으로 고정
-                pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                // ✅ 첫 페이지
+                pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                // ✅ 페이지 넘기기 (하단 잘림 방지)
+                while (heightLeft > 0) {
+                    position -= pageHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
 
                 pdf.save('금융_내역.pdf');
             });
+
         }, 300);
     });
 });

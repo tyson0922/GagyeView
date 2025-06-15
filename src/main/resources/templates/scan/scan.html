@@ -2,54 +2,72 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <!--====== Bootstrap CSS ======-->
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css"/>
-    <!--====== Lineicons CSS as we are using this for icons ======-->
-    <!--    <link rel="stylesheet" href="/css/bootstrap/lineicons.css"/>-->
     <link rel="stylesheet" href="https://cdn.lineicons.com/5.0/lineicons.css"/>
-
-    <!--====== Starter Style CSS to make components works ======-->
     <link rel="stylesheet" href="/css/bootstrap/starter.css"/>
-    <!--    appbar css-->
     <link rel="stylesheet" href="/css/components/appbar.css"/>
-    <!--    main section css-->
     <link rel="stylesheet" href="/css/components/main-section.css"/>
-    <!--    card section css-->
     <link rel="stylesheet" href="/css/components/multiCard.css"/>
-    <!--    buttonAndInput css-->
     <link rel="stylesheet" href="/css/components/buttonAndInput.css"/>
-    <!-- custom toast css-->
     <link rel="stylesheet" href="/css/alert/customToastStyle.css">
-
-    <!-- map.css -->
     <link rel="stylesheet" href="/css/pages/map.css">
-
-
-    <!--====== Bootstrap js ======-->
-    <!--    <script type="text/javascript" src="/js/bootstrap/bootstrap.bundle.min.js"></script>-->
-    <!-- Bootstrap Bundle JS (includes Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script type="text/javascript" src="/js/components/appbar.js"></script>
-
-    <!--    iconify icons(better than lineicon)-->
-    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-
-
-    <!-- SweetAlert -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script type="text/javascript" src="/js/alert/showPresetToast.js"></script>
-
 
     <script type="text/javascript" src="/js/jquery/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="/js/jquery/jquery.serializeObject.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- map js -->
-    <script th:src="@{'//dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoJsKey} + '&libraries=services'}"></script>
-    <script type="text/javascript" src="/js/pages/map.js"></script>
-    <title>지도</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script type="text/javascript" src="/js/alert/showPresetToast.js"></script>
+
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+
+<!--    <script src="https://cdn.jsdelivr.net/npm/@techstark/opencv-js"></script>-->
+
+<!--    <script>-->
+<!--        let isOpenCvReady = false;-->
+
+<!--        window.onload = function() {-->
+<!--            if (typeof cv !== 'undefined') {-->
+<!--                cv['onRuntimeInitialized'] = () => {-->
+<!--                    isOpenCvReady = true;-->
+<!--                    console.log("✅ OpenCV.js 완전히 초기화됨 (onRuntimeInitialized)");-->
+<!--                };-->
+<!--                if (cv.getBuildInformation && !isOpenCvReady) {-->
+<!--                    isOpenCvReady = true;-->
+<!--                    console.log("✅ OpenCV.js 강제 초기화됨 (cv.getBuildInformation check)");-->
+<!--                }-->
+
+<!--            } else {-->
+<!--                console.error("OpenCV 'cv' object is not defined when window.onload fires. Initiating polling fallback.");-->
+<!--                let checkCvReadyInterval = setInterval(() => {-->
+<!--                    if (typeof cv !== 'undefined' && cv.getBuildInformation) {-->
+<!--                        clearInterval(checkCvReadyInterval);-->
+<!--                        cv['onRuntimeInitialized'] = () => {-->
+<!--                            isOpenCvReady = true;-->
+<!--                            console.log("✅ OpenCV.js 완전히 초기화됨 (Polling fallback)");-->
+<!--                        };-->
+<!--                        if (!isOpenCvReady) {-->
+<!--                            isOpenCvReady = true;-->
+<!--                            console.log("✅ OpenCV.js 강제 초기화됨 (Polling, onRuntimeInitialized might have missed)");-->
+<!--                        }-->
+<!--                    }-->
+<!--                }, 100);-->
+<!--            }-->
+<!--        };-->
+<!--    </script>-->
+
+    <!-- ✅ Fabric.js 라이브러리 로드 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
+
+    <style>
+
+    </style>
+    <title>영수증 등록</title>
 </head>
 <body>
+
+<input type="hidden" id="userIdInput" th:value="${session.SS_USER_ID}">
 <!--====== NAVBAR ONE PART START ======-->
 <section class="navbar-area navbar-one">
     <div class="container">
@@ -134,100 +152,84 @@
 <!--====== MainSection PART Start ======-->
 <section class="main-section">
     <div class="container">
-        <!--    <div class="container" style="margin-top:50px;">-->
-        <!--        <h1>똑똑한 소비의 시작, 가계뷰와 함께</h1>-->
-
-        <!--        <p>This is your hero or main content section.</p>-->
-        <!--====== CARD PART START ======-->
         <section class="card-area">
             <div class="container">
                 <div class="row justify-content-center">
 
-
-                    <!-- col -->
+                    <!-- LEFT: 영수증 이미지 업로드 -->
                     <div class="col-lg-8 col-md-9 col-sm-11">
                         <div class="single-card card-style-one">
-
                             <div class="card-content">
                                 <h4 class="card-title">
-                                    <a href="javascript:void(0)">마트 지도</a>
+                                    <a href="javascript:void(0)">영수증 업로드</a>
                                 </h4>
-                                <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between">
-                                    <p class="text mb-2 mb-sm-0" style="width: 100%; padding-left: 100px;">
-                                        마트 검색을 통해 위치 및 상세 정보를 확인할 수 있습니다
-                                    </p>
-                                    <div style="width: 13%; text-align: right;">
-                                        <button class="btn btn-sm caution-btn-outline w-100 mt-2 mt-sm-0" id="currentLocationBtn">
-                                            현재 위치
-                                        </button>
-                                    </div>
-                                </div>
-                                <br/>
-                                <div id="martMap" style="width: 100%; height: 460px;"></div>
-                            </div>
-                        </div>
-                        <!-- single-card -->
-                    </div>
-                    <!-- col -->
-
-                    <!-- RIGHT: 마트 검색 + 검색 결과 -->
-                    <div class="col-lg-4 col-md-7 col-sm-9 d-flex flex-column gap-3">
-
-                        <!-- 마트 검색 카드 -->
-                        <div class="single-card card-style-one">
-                            <div class="card-content">
-                                <h4 class="card-title">마트 검색</h4>
-                                <p class="text">
-                                    마트 이름 또는 주소를 입력하여 <br>
-                                    원하는 위치를 검색할 수 있습니다.
+                                <p class="text mb-3 text-center">
+                                    이미지 파일을 업로드하여 <br> 자동으로 항목을 인식하고 분류합니다.
                                 </p>
-
-                                <!-- Input + Button Row -->
-                                <form id="searchForm">
-                                    <div class="input-row" style="margin: 0 5%; margin-top: 20px;">
-                                        <div class="form-input input-left">
-                                            <div class="input-items default">
-                                                <input type="text" name="martName" id="martName"
-                                                       placeholder="예: 이마트 성수점"
-                                                       style="padding: 12px; border-radius: 10px;">
-                                            </div>
+                                <form id="receiptUploadForm" enctype="multipart/form-data">
+                                    <!-- Wrap inputs in a centered, fixed-width div -->
+                                    <div class="mx-auto" style="max-width: 300px;">
+                                        <!-- File Input -->
+                                        <div class="mb-3">
+                                            <input type="file" name="receiptImage" id="receiptImage" accept="image/*"
+                                                   class="form-control" required>
                                         </div>
-                                        <div class="input-check-button-right">
-                                            <button type="button" class="btn caution-btn" id="searchMartBtn"
-                                                    style="border-radius: 10px;">검색
+
+                                        <!-- Upload Button -->
+                                        <div>
+                                            <button type="submit" class="btn btn-warning w-100" style="border-radius: 20px;">
+                                                영수증 업로드
                                             </button>
                                         </div>
                                     </div>
                                 </form>
+
+                                <!-- ✅ 미리보기 -->
+                                <div id="uploadedReceiptPreview" class="text-center mt-4" style="display: none;">
+                                    <canvas id="receiptCanvas" style="display: block; margin: auto; border-radius: 10px;"></canvas>
+                                    <button type="button" class="btn btn-primary mt-2" id="confirmCropBtn">
+                                        선택 완료
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- 검색 결과 카드 -->
-                        <div class="single-card card-style-one" id="searchResultCard"
-                             style="display: none; margin-top: 10px;">
+                    <!-- RIGHT: 스캔 영역 수정 + 등록 -->
+                    <div class="col-lg-4 col-md-7 col-sm-9 d-flex flex-column gap-3">
+
+                        <div class="single-card card-style-one">
                             <div class="card-content">
-                                <h4 class="card-title">검색 결과</h4>
-                                <ol id="searchResultList">
-                                    <!-- Search results will be injected here -->
-                                </ol>
+                                <h4 class="card-title">작업 선택</h4>
+                                <p class="text">
+                                    아래 버튼을 통해 스캔된 영역을 수정하거나<br> 영수증을 등록할 수 있습니다.
+                                </p>
+
+                                <div class="d-grid gap-2 mt-4 px-3">
+                                    <button type="button" class="btn caution-btn-outline" id="editScanAreaBtn">
+                                        스캔 영역 수정하기
+                                    </button>
+                                    <button type="button" class="btn caution-btn" id="submitReceiptBtn">
+                                        영수증 등록하기
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                     </div>
+                    <!-- END RIGHT -->
+
                 </div>
                 <!-- row -->
-
             </div>
             <!-- container -->
         </section>
-        <!--====== CARD PART ENDS ======-->
     </div>
-
 </section>
 <!--====== MainSection PART End ======-->
-<script>
 
-</script>
+<script type="text/javascript" src="/js/components/appbar.js"></script>
+<script src="/js/pages/scan.js"></script>
 
 </body>
 </html>
