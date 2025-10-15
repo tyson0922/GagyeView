@@ -1,6 +1,7 @@
 package kopo.gagyeview.service.impl;
 
 import kopo.gagyeview.dto.*;
+import kopo.gagyeview.feign.ChatGptFeignClient;
 import kopo.gagyeview.persistence.mapper.ISumMapper;
 import kopo.gagyeview.persistence.repository.AbstractMongoDBCommon;
 import kopo.gagyeview.persistence.repository.IFinInfoMapper;
@@ -23,6 +24,7 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
     private final ICatService catService;
     private final ISumMapper sumMapper;
     private final MongoTemplate mongodb;
+    private final ChatGptFeignClient chatGptFeignClient;
 
     // 사용할 컬렉션 이름
     private static final String colNm = "MON_TRNS";
@@ -240,6 +242,41 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
     public BigDecimal getMonthlyTotal(String userId, String catType, String yrMon) throws Exception {
         log.info("getMonthlyTotal - userId: {}, catType: {}, yrMon: {}", userId, catType, yrMon);
         return sumMapper.getMonthlyTotal(userId, catType, yrMon);
+    }
+
+    /**
+     * AI를 통한 사용자 소비 습관 요약
+     * @param userId 사용자 ID
+     * @return AI가 요약한 소비 습관
+     */
+    public String getAiSpendingSummary(String userId) {
+        // 1. 사용자 월별 요약 데이터 준비
+        List<BarChartDTO> summaryList = sumMapper.getMonthlyIncomeExpense(userId);
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append("아래는 사용자의 월별 수입/지출 요약입니다. 소비 습관을 분석해 한글로 요약해 주세요.\n");
+        for (BarChartDTO dto : summaryList) {
+            promptBuilder.append(String.format("%s월: 수입=%.0f, 지출=%.0f\n", dto.getMonth(), dto.getIncome(), dto.getExpense()));
+        }
+        String prompt = promptBuilder.toString();
+
+        // 2. ChatGPT API 요청 DTO 생성
+        ChatGptRequestDTO requestDTO = ChatGptRequestDTO.builder()
+                .prompt(prompt)
+                .maxTokens(300)
+                .model("text-davinci-003")
+                .build();
+
+        // 3. OpenAI API 키 (환경변수 또는 설정에서 가져오기)
+        String apiKey = System.getenv("OPENAI_API_KEY");
+        if (apiKey == null) throw new IllegalStateException("OPENAI_API_KEY 환경변수가 필요합니다.");
+        String authorization = "Bearer " + apiKey;
+
+        // 4. Feign 클라이언트 호출
+        ChatGptResponseDTO response = chatGptFeignClient.getSummary(authorization, requestDTO);
+        if (response != null && response.getChoices() != null && !response.getChoices().isEmpty()) {
+            return response.getChoices().get(0).getText();
+        }
+        return "AI 요약 결과를 가져올 수 없습니다.";
     }
 
 }

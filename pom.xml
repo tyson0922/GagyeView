@@ -132,6 +132,13 @@
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
 
+        <!-- OpenFeign for REST client -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <version>4.0.4</version>
+        </dependency>
+
     </dependencies>
 
     <build>
