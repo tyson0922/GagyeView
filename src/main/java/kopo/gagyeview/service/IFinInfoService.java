@@ -72,4 +72,11 @@ public interface IFinInfoService {
      * 특정 월의 수입 또는 지출 총합 조회 (요약 카드용)
      */
     BigDecimal getMonthlyTotal(String userId, String catType, String yrMon) throws Exception;
+
+    /**
+     * AI를 통한 사용자 소비 습관 요약
+     * @param userId 사용자 ID
+     * @return AI가 요약한 소비 습관
+     */
+    String getAiSpendingSummary(String userId);
 }

@@ -1,0 +1,7 @@
+{
+  "Parameters": {
+    "host": ["gagyeview-valkey-dev-mu2zds.serverless.apn2.cache.amazonaws.com"],
+    "portNumber": ["6379"],
+    "localPortNumber": ["6379"]
+  }
+}

@@ -299,4 +299,23 @@ public class FinInfoController {
         }
     }
 
+    @GetMapping("/aiSummary")
+    @ResponseBody
+    public ResponseEntity<? extends CommonResponse<?>> getAiSpendingSummary(HttpSession session) {
+        log.info("{}.getAiSpendingSummary Start!", this.getClass().getName());
+        String userId = CmmUtil.nvl((String) session.getAttribute("SS_USER_ID"));
+        if (userId.isEmpty()) {
+            SweetAlertMsgDTO samDTO = SweetAlertMsgDTO.fail("요약 실패", "로그인 정보가 없습니다.");
+            return ResponseEntity.ok(CommonResponse.of(HttpStatus.UNAUTHORIZED, "fail", samDTO));
+        }
+        try {
+            String summary = finInfoService.getAiSpendingSummary(userId);
+            return ResponseEntity.ok(CommonResponse.of(HttpStatus.OK, "success", summary));
+        } catch (Exception e) {
+            log.error("AI 요약 오류", e);
+            SweetAlertMsgDTO samDTO = SweetAlertMsgDTO.fail("요약 실패", "서버 오류가 발생했습니다.");
+            return ResponseEntity.ok(CommonResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "fail", samDTO));
+        }
+    }
+
 }

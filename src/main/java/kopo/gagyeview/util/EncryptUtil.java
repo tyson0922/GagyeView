@@ -52,20 +52,26 @@ public class EncryptUtil {
             InputStream input = EncryptUtil.class.getClassLoader()
                     .getResourceAsStream("credentials/api-keys.properties");
 
-            // If not found, try absolute file path
             if (input == null) {
-                input = new FileInputStream("D:/SpringBootProjects/GagyeView/credentials/api-keys.properties");
+                // Try file system absolute path
+                String filePath = "C:/SpringBootPRJs/GagyeView/credentials/api-keys.properties";
+                try {
+                    input = new FileInputStream(filePath);
+                } catch (Exception e) {
+                    System.err.println("⚠️ Failed to load encryption config from file system. Using defaults. Reason: " + e.getMessage());
+                }
             }
 
-            Properties props = new Properties();
-            props.load(input);
-
-            key = props.getProperty("encryption.aes-key", key);
-            addMessage = props.getProperty("encryption.add-message", addMessage);
-
-            System.out.println("✅ AES Key Loaded: " + key);
-            System.out.println("✅ AddMessage Loaded: " + addMessage);
-
+            if (input != null) {
+                Properties props = new Properties();
+                props.load(input);
+                key = props.getProperty("encryption.aes-key", key);
+                addMessage = props.getProperty("encryption.add-message", addMessage);
+                System.out.println("✅ AES Key Loaded: " + key);
+                System.out.println("✅ AddMessage Loaded: " + addMessage);
+            } else {
+                System.err.println("⚠️ Failed to load encryption config from classpath or file system. Using defaults.");
+            }
         } catch (Exception e) {
             System.err.println("⚠️ Failed to load encryption config. Using defaults. Reason: " + e.getMessage());
         }

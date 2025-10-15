@@ -1,0 +1,7 @@
+{
+  "Parameters": {
+    "host": ["mariadb.ct8esgw60c92.ap-northeast-2.rds.amazonaws.com"],
+    "portNumber": ["3306"],
+    "localPortNumber": ["3306"]
+  }
+}
