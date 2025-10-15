@@ -22,6 +22,9 @@ public class MailService implements IMailService {
     @Value("${spring.mail.username}")
     private String fromMail;
 
+    @Value("${spring.mail.password}")
+    private String mailPassword;
+
     @Override
     public int sendMail(MailDTO pDTO) {
 
@@ -40,6 +43,8 @@ public class MailService implements IMailService {
         String contents = CmmUtil.nvl(pDTO.text()); // 메일 내용
 
         log.info("toMail: {}, title: {}, text: {}", toMail, title, contents);
+        log.info("Mail sender username: {}", fromMail);
+        log.info("Mail sender password (from @Value): {}", mailPassword);
 
         // 메일 발송 메시지 구조(파일 첨부 가능)
         MimeMessage message = mailSender.createMimeMessage();

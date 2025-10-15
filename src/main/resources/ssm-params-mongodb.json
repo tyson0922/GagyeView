@@ -1,0 +1,7 @@
+{
+  "Parameters": {
+    "host": ["mongodb-dev.cluster-ct8esgw60c92.ap-northeast-2.docdb.amazonaws.com"],
+    "portNumber": ["27017"],
+    "localPortNumber": ["27017"]
+  }
+}

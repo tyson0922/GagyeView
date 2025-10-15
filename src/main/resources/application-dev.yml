@@ -1,0 +1,40 @@
+spring:
+
+  datasource:
+    url: jdbc:mariadb://mariadb.ct8esgw60c92.ap-northeast-2.rds.amazonaws.com:3306/gagyeview?useSSL=true&requireSSL=true&verifyServerCertificate=false&serverSslCert=C:\\myAWS\\global-bundle.pem&serverTimezone=Asia/Seoul
+#    username: admin
+    username: poly
+#    password: 12341234
+    password: 1234
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  data:
+    mongodb:
+      # If using AWS DocumentDB via port-forward:
+      # uri: mongodb://poly:poly1234@mongodb-dev.cluster-ct8esgw60c92.ap-northeast-2.docdb.amazonaws.com:27017/?tls=true&tlsCAFile=C:\\myAWS\\global-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false
+      # For local dev tunnel:
+      uri: mongodb://poly:poly1234@mongodb-dev.cluster-ct8esgw60c92.ap-northeast-2.docdb.amazonaws.com:27017/gagyeview?replicaSet=rs0&readPreference=secondaryPreferred&tls=true&retryWrites=false&directConnection=true&authSource=admin&authMechanism=SCRAM-SHA-1
+
+    redis:
+      # For AWS ElastiCache (TLS):
+      # host: gagyeview-valkey-dev-mu2zds.serverless.apn2.cache.amazonaws.com
+      host: localhost
+      port: 6379
+      ssl:
+        enabled: true
+
+  cache:
+    redis:
+      key-prefix: "dev:"
+
+  session:
+    redis:
+      namespace: "dev:session"
+
+  config:
+    import: file:credentials/api-keys.properties
+
+GOOGLE_APPLICATION_CREDENTIALS: C:\SpringBootPRJs\GagyeView/credentials/CloudVisionAPIJsonKey.json
+
+# -Djavax.net.ssl.trustStore=C:\myAWS\global-bundle.pem
+#-Djavax.net.ssl.trustStoreType=PEM

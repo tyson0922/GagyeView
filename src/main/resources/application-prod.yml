@@ -1,0 +1,42 @@
+spring:
+  # === MariaDB (RDS) ===
+  datasource:
+    # Use the WRITER endpoint for reads+writes
+    url: jdbc:mariadb://mariadb.ct8esgw60c92.ap-northeast-2.rds.amazonaws.com:3306/gagyeview?useSSL=true&requireSSL=true&verifyServerCertificate=true&serverTimezone=Asia/Seoul
+    username: poly     # from env/Secrets Manager
+    password: 1234      # from env/Secrets Manager
+    driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none              # keep schema stable in prod
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+    open-in-view: false
+    show-sql: false
+
+  # === DocumentDB (MongoDB-compatible) ===
+  data:
+    mongodb:
+      uri: mongodb://poly:poly1234@mongodb-dev.ct8esgw60c92.ap-northeast-2.docdb.amazonaws.com:27017/gagyeview?replicaSet=rs0&readPreference=secondaryPreferred&tls=true&retryWrites=false&authSource=admin&authMechanism=SCRAM-SHA-1
+
+
+    # === ElastiCache (Redis/Valkey) ===
+    redis:
+      host: gagyeview-valkey-dev-mu2zds.serverless.apn2.cache.amazonaws.com
+      port: 6379
+      ssl:
+        enabled: true             # TLS on serverless Valkey
+
+  cache:
+    redis:
+      key-prefix: "prod:"
+
+  session:
+    redis:
+      namespace: "prod:session"
+
+  config:
+    import: file:/spring_module/GagyeView/credentials/api-keys.properties
+
+GOOGLE_APPLICATION_CREDENTIALS: /spring_module/GagyeView/credentials/CloudVisionAPIJsonKey.json
