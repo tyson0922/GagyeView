@@ -36,7 +36,7 @@ public class MapController {
         model.addAttribute("kakaoJsKey", kakaoJsKey);
 
         log.info("{}.mapPage End!", this.getClass().getName());
-        return "/map/map";
+        return "map/map";
     }
 
     @PostMapping("/searchMart")

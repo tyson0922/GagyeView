@@ -128,10 +128,23 @@
             console.log("🧪 상태 값:", saveJson.status, typeof saveJson.status);
 
             if (saveJson.httpStatus?.toUpperCase() === 'OK') {
+                const parsed = saveJson.data?.parsedResult;
+
+                // 🎯 사용자 친화적 포맷
+                    const formattedHtml = `
+                        <div style="text-align:center; font-size:16px;">
+                            <b>카테고리 종류:</b> ${parsed.catType}<br>
+                            <b>카테고리 이름:</b> ${parsed.catNm}<br>
+                            <b>거래 일자:</b> ${parsed.trnsDt}<br>
+                            <b>거래 금액:</b> ${parsed.trnsAmt.toLocaleString()}원<br>
+                            <b>메모:</b> ${parsed.memo}
+                        </div>
+                    `;
+
                 Swal.fire({
                     icon: 'success',
                     title: '저장 완료',
-                    html: `<b>GPT 분석 및 저장 성공</b><br><br><pre>${text}</pre>`,
+                    html: `<b>GPT 분석 및 저장 성공</b><br><br>${formattedHtml}`,
                     confirmButtonText: '확인'
                 });
             } else {

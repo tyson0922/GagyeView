@@ -26,4 +26,15 @@ public record MonTrnsDTO(
 
         Date regDt,
         Date chgDt
-) {}
+
+
+) {
+
+        public String getDerivedYrMon() {
+                if (monTrnsDetailDTO != null && monTrnsDetailDTO.trnsDt() != null) {
+                        return new java.text.SimpleDateFormat("yyyy-MM").format(monTrnsDetailDTO.trnsDt());
+                }
+                return yrMon; // fallback
+        }
+
+}

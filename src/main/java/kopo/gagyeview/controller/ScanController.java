@@ -12,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -58,17 +60,17 @@ public class ScanController {
         log.info("📤 GPT 분석 및 저장 요청: userId = {}", pDTO.getUserId());
 
         try {
-            // ✅ Analyze and save
-            int result = scanService.analyzeAndSaveTransaction(pDTO.getOcrText(), pDTO.getUserId());
+            // ✅ 분석 및 저장 결과를 함께 반환 (예: 항목 리스트, 총합, 카테고리 분류 등)
+            Map<String, Object> analyzedResult = scanService.analyzeAndSaveTransaction(pDTO.getOcrText(), pDTO.getUserId());
 
-            if (result == 0) {
+            if (analyzedResult == null || analyzedResult.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                         CommonResponse.of(HttpStatus.BAD_REQUEST, "분석 또는 저장 실패", null)
                 );
             }
 
             return ResponseEntity.ok(
-                    CommonResponse.of(HttpStatus.OK, "분석 및 저장 성공", result)
+                    CommonResponse.of(HttpStatus.OK, "분석 및 저장 성공", analyzedResult)
             );
 
         } catch (Exception e) {
@@ -78,4 +80,5 @@ public class ScanController {
             );
         }
     }
+
 }

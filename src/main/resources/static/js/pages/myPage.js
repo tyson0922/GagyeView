@@ -1,10 +1,10 @@
 $(document).ready(function () {
     let form = document.getElementById("form");
 
-    // 이메일 인증메일 발송
-    $('#updateUserNameBtn').on("click", function () {
-        updateUserName(form);
-    });
+    // // 이메일 인증메일 발송
+    // $('#updateUserNameBtn').on("click", function () {
+    //     updateUserName(form);
+    // });
 
     // 이메일 인증 메일 발송
     $('#sendAuthEmail').on("click", function () {

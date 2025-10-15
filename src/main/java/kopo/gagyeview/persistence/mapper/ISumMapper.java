@@ -39,4 +39,10 @@ public interface ISumMapper {
                                @Param("catType") String catType,
                                @Param("yrMon") String yrMon);
 
+
+    // ✅ 신규: 요약 테이블 비어 있을 경우 정리
+    void deleteZeroSum(MonTrnsDTO pDTO);
+    void deleteZeroCatSum(MonTrnsDTO pDTO);
+
+
 }
