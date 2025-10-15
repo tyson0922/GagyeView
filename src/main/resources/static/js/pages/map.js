@@ -15,10 +15,9 @@ $(document).ready(function(){
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
 
-        // if (accuracy > 100) {
-        //     console.warn("Accuracy too low (" + accuracy + "m). Ignoring location update.");
-        //     return;
-        // }
+        if (accuracy > 100) {
+            showPresetToast("error", "오류", "고정밀 위치 정보를 가져올 수 없습니다.");
+        }
 
         const latLng = new kakao.maps.LatLng(lat, lng);
         map.setCenter(latLng);

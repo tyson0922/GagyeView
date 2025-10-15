@@ -4,6 +4,7 @@ package kopo.gagyeview.service;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IScanService {
 
@@ -26,7 +27,8 @@ public interface IScanService {
      * ✅ OCR 결과를 기반으로 GPT 분석 → MonTrnsDTO 생성 및 저장
      * @param ocrText OCR 텍스트
      * @param userId 사용자 ID
-     * @return 저장 성공 여부 (성공 시 1)
+     * @return 분석 결과와 저장 성공 여부가 포함된 Map (예: {"parsedResult": JsonNode, "saved": true})
      */
-    int analyzeAndSaveTransaction(String ocrText, String userId) throws Exception;
+    Map<String, Object> analyzeAndSaveTransaction(String ocrText, String userId) throws Exception;
+
 }

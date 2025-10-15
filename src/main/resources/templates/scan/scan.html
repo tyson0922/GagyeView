@@ -2,6 +2,13 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <!-- favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/favicon/site.webmanifest">
+
+
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="https://cdn.lineicons.com/5.0/lineicons.css"/>
     <link rel="stylesheet" href="/css/bootstrap/starter.css"/>
@@ -21,41 +28,6 @@
     <script type="text/javascript" src="/js/alert/showPresetToast.js"></script>
 
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
-
-<!--    <script src="https://cdn.jsdelivr.net/npm/@techstark/opencv-js"></script>-->
-
-<!--    <script>-->
-<!--        let isOpenCvReady = false;-->
-
-<!--        window.onload = function() {-->
-<!--            if (typeof cv !== 'undefined') {-->
-<!--                cv['onRuntimeInitialized'] = () => {-->
-<!--                    isOpenCvReady = true;-->
-<!--                    console.log("✅ OpenCV.js 완전히 초기화됨 (onRuntimeInitialized)");-->
-<!--                };-->
-<!--                if (cv.getBuildInformation && !isOpenCvReady) {-->
-<!--                    isOpenCvReady = true;-->
-<!--                    console.log("✅ OpenCV.js 강제 초기화됨 (cv.getBuildInformation check)");-->
-<!--                }-->
-
-<!--            } else {-->
-<!--                console.error("OpenCV 'cv' object is not defined when window.onload fires. Initiating polling fallback.");-->
-<!--                let checkCvReadyInterval = setInterval(() => {-->
-<!--                    if (typeof cv !== 'undefined' && cv.getBuildInformation) {-->
-<!--                        clearInterval(checkCvReadyInterval);-->
-<!--                        cv['onRuntimeInitialized'] = () => {-->
-<!--                            isOpenCvReady = true;-->
-<!--                            console.log("✅ OpenCV.js 완전히 초기화됨 (Polling fallback)");-->
-<!--                        };-->
-<!--                        if (!isOpenCvReady) {-->
-<!--                            isOpenCvReady = true;-->
-<!--                            console.log("✅ OpenCV.js 강제 초기화됨 (Polling, onRuntimeInitialized might have missed)");-->
-<!--                        }-->
-<!--                    }-->
-<!--                }, 100);-->
-<!--            }-->
-<!--        };-->
-<!--    </script>-->
 
     <!-- ✅ Fabric.js 라이브러리 로드 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
@@ -171,25 +143,44 @@
                                     <div class="mx-auto" style="max-width: 300px;">
                                         <!-- File Input -->
                                         <div class="mb-3">
+                                            <!-- 숨겨진 파일 입력 -->
                                             <input type="file" name="receiptImage" id="receiptImage" accept="image/*"
-                                                   class="form-control" required>
+                                                   style="display: none;" required>
+
+                                            <!-- 사용자 정의 파일 선택 UI -->
+                                            <div class="input-group" style="max-width: 100%;">
+                                                <button type="button" id="customFileButton" class="btn btn-outline-secondary">파일 선택</button>
+                                                <span id="fileNameDisplay"
+                                                      class="form-control bg-light text-truncate"
+                                                      style="max-width: 300px;"
+                                                      title="선택된 파일 없음">선택된 파일 없음</span>
+                                            </div>
                                         </div>
 
-                                        <!-- Upload Button -->
-                                        <div>
-                                            <button type="submit" class="btn btn-warning w-100" style="border-radius: 20px;">
-                                                영수증 업로드
-                                            </button>
-                                        </div>
+
                                     </div>
                                 </form>
 
                                 <!-- ✅ 미리보기 -->
-                                <div id="uploadedReceiptPreview" class="text-center mt-4" style="display: none;">
-                                    <canvas id="receiptCanvas" style="display: block; margin: auto; border-radius: 10px;"></canvas>
-                                    <button type="button" class="btn btn-primary mt-2" id="confirmCropBtn">
-                                        선택 완료
-                                    </button>
+                                <div id="uploadedReceiptPreview"
+                                     class="text-center mt-4 d-flex justify-content-center flex-column align-items-center"
+                                     style="display: none;">
+                                    <div class="d-flex justify-content-center">
+                                        <canvas id="receiptCanvas"
+                                                style="display: block; margin: auto; border-radius: 10px;"></canvas>
+                                    </div>
+
+                                    <!-- ✅ Crop-related buttons (initially hidden) -->
+                                    <div id="cropActionButtons" style="display: none; width: 100%;">
+                                        <button type="button" class="btn caution-btn-outline  mt-2 px-4"
+                                                id="confirmCropBtn">
+                                            스캔 영역 선택 완료
+                                        </button>
+                                        <button type="button" class="btn caution-btn mt-2 px-4"
+                                                id="resetUploadBtn" style="border-radius: 20px;">
+                                            영수증 사진 다시 업로드
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -206,12 +197,15 @@
                                 </p>
 
                                 <div class="d-grid gap-2 mt-4 px-3">
+
+                                    <a class="btn caution-btn-outline" href="/finInfo/detail">금융 내역</a>
                                     <button type="button" class="btn caution-btn-outline" id="editScanAreaBtn">
                                         스캔 영역 수정하기
                                     </button>
                                     <button type="button" class="btn caution-btn" id="submitReceiptBtn">
                                         영수증 등록하기
                                     </button>
+
                                 </div>
                             </div>
                         </div>

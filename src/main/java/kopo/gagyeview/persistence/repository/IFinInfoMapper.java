@@ -1,5 +1,6 @@
 package kopo.gagyeview.persistence.repository;
 
+import com.mongodb.MongoException;
 import kopo.gagyeview.dto.AggregationResultDTO;
 import kopo.gagyeview.dto.MonTrnsDTO;
 
@@ -50,5 +51,6 @@ public interface IFinInfoMapper {
 
     List<AggregationResultDTO> monthlyCategoryStack(String userId) throws Exception;
 
+    int deleteTrnsByUserId(String userId) throws MongoException;
 
 }

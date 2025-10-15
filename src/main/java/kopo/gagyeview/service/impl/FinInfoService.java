@@ -56,10 +56,21 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
 
         catService.syncUserCat(catDTO);
 
+        pDTO = MonTrnsDTO.builder()
+                .id(pDTO.id())
+                .userId(pDTO.userId())
+                .yrMon(pDTO.getDerivedYrMon()) // ✅ corrected value
+                .catType(pDTO.catType())
+                .monTrnsDetailDTO(pDTO.monTrnsDetailDTO())
+                .regDt(pDTO.regDt())
+                .chgDt(pDTO.chgDt())
+                .build();
+
         // ✅ 요약 테이블 동기화
         sumMapper.upsertMonSum(pDTO);
         sumMapper.upsertMonCatSum(pDTO);
         sumMapper.recalculateCatPerc(pDTO);
+
 
         log.info("{}.insertTrns End!", this.getClass().getName());
         return res;
@@ -97,9 +108,23 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
         MonTrnsDTO oldDTO = finInfoMapper.getTrnsById(id);
 
         if (oldDTO != null) {
+
+            oldDTO = MonTrnsDTO.builder()
+                    .id(oldDTO.id())
+                    .userId(oldDTO.userId())
+                    .yrMon(oldDTO.getDerivedYrMon()) // ✅ corrected value
+                    .catType(oldDTO.catType())
+                    .monTrnsDetailDTO(oldDTO.monTrnsDetailDTO())
+                    .regDt(oldDTO.regDt())
+                    .chgDt(oldDTO.chgDt())
+                    .build();
+
             sumMapper.decrementMonSum(oldDTO);
             sumMapper.decrementMonCatSum(oldDTO);
             sumMapper.recalculateCatPerc(oldDTO);
+
+            sumMapper.deleteZeroSum(oldDTO);
+            sumMapper.deleteZeroCatSum(oldDTO);
         }
 
         int res = finInfoMapper.deleteTrnsById(id);
@@ -116,11 +141,35 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
         // Step 1: Get old transaction by ID
         MonTrnsDTO oldDTO = finInfoMapper.getTrnsById(pDTO.id());
 
+        // Before decrement & upsert
+        oldDTO = MonTrnsDTO.builder()
+                .id(oldDTO.id())
+                .userId(oldDTO.userId())
+                .yrMon(oldDTO.getDerivedYrMon()) // ✅ corrected value
+                .catType(oldDTO.catType())
+                .monTrnsDetailDTO(oldDTO.monTrnsDetailDTO())
+                .regDt(oldDTO.regDt())
+                .chgDt(oldDTO.chgDt())
+                .build();
+
+        pDTO = MonTrnsDTO.builder()
+                .id(pDTO.id())
+                .userId(pDTO.userId())
+                .yrMon(pDTO.getDerivedYrMon()) // ✅ corrected value
+                .catType(pDTO.catType())
+                .monTrnsDetailDTO(pDTO.monTrnsDetailDTO())
+                .regDt(pDTO.regDt())
+                .chgDt(pDTO.chgDt())
+                .build();
+
         if (oldDTO != null) {
             // Step 2: Decrement the old values from summary tables
             sumMapper.decrementMonSum(oldDTO);
             sumMapper.decrementMonCatSum(oldDTO);
             sumMapper.recalculateCatPerc(oldDTO);
+
+            sumMapper.deleteZeroSum(oldDTO);
+            sumMapper.deleteZeroCatSum(oldDTO);
         }
 
         // Step 3: Update transaction in MongoDB
@@ -130,6 +179,8 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
         sumMapper.upsertMonSum(pDTO);
         sumMapper.upsertMonCatSum(pDTO);
         sumMapper.recalculateCatPerc(pDTO);
+
+
 
         log.info("{}.updateTrns End!", this.getClass().getName());
         return res;

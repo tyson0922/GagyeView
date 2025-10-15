@@ -196,5 +196,10 @@ public class FinInfoMapper implements IFinInfoMapper {
         return mongodb.aggregate(agg, colNm, AggregationResultDTO.class).getMappedResults();
     }
 
+    @Override
+    public int deleteTrnsByUserId(String userId) throws MongoException {
+        Query query = new Query(Criteria.where("userId").is(userId));
+        return (int) mongodb.remove(query, MonTrnsDTO.class, colNm).getDeletedCount();
+    }
 
 }

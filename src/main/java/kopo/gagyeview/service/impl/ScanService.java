@@ -35,7 +35,8 @@ public class ScanService implements IScanService {
     private final IFinInfoService finInfoService;
     private final ICatMapper CatMapper;
 
-    @Value("file:${google.cloud.credential.path}")
+    //    @Value("file:${google.cloud.credential.path}")
+    @Value("file:${GOOGLE_APPLICATION_CREDENTIALS}")
     private Resource googleCredentialsResource;
 
     @Value("${openai.api-key}")
@@ -120,7 +121,7 @@ public class ScanService implements IScanService {
         sb.append("\nReturn the result as JSON with the following fields:\n")
                 .append("- catType (수입 or 지출)\n")
                 .append("- catNm (must be from the list above)\n")
-                .append("- trnsDt (yyyy-MM-dd or today if not clear)\n")
+                .append("- trnsDt (must be in yyyy-MM-dd format, do NOT use words like 'today')\n")
                 .append("- trnsAmt (numeric, total amount spent)\n")
                 .append("- memo (brief description)\n")
                 .append("\nReply with only the JSON object, no explanation.");
@@ -188,21 +189,32 @@ public class ScanService implements IScanService {
      * ✅ OCR 결과 기반 → ChatGPT 분석 + 저장
      */
     @Override
-    public int analyzeAndSaveTransaction(String ocrText, String userId) throws Exception {
+    public Map<String, Object> analyzeAndSaveTransaction(String ocrText, String userId) throws Exception {
 
         List<String> userCats = CatMapper.selectCatNamesByUserId(userId);
         if (userCats.isEmpty()) {
             log.warn("📋 사용자 카테고리 없음");
-            return 0;
+            return null;
         }
 
         JsonNode gptJson = callChatGPTAPI(ocrText, userCats);
         if (gptJson == null || gptJson.isEmpty()) {
             log.warn("🤖 GPT 응답 없음");
-            return 0;
+            return null;
         }
 
         MonTrnsDTO pDTO = convertGptJsonToDTO(gptJson, userId);
-        return finInfoService.insertTrns(pDTO);
+        int saveResult = finInfoService.insertTrns(pDTO);
+
+        if (saveResult == 0) {
+            log.warn("💾 저장 실패");
+            return null;
+        }
+
+        // 🎯 분석 결과와 저장 성공 여부를 함께 반환
+        return Map.of(
+                "parsedResult", gptJson, // GPT 분석 결과
+                "saved", true            // 저장 성공 여부
+        );
     }
 }

@@ -5,6 +5,7 @@ import kopo.gagyeview.controller.response.CommonResponse;
 import kopo.gagyeview.dto.ExistsYnDTO;
 import kopo.gagyeview.dto.SweetAlertMsgDTO;
 import kopo.gagyeview.dto.UserInfoDTO;
+import kopo.gagyeview.persistence.repository.impl.FinInfoMapper;
 import kopo.gagyeview.service.ICatService;
 import kopo.gagyeview.service.IUserInfoService;
 import kopo.gagyeview.util.CmmUtil;
@@ -29,6 +30,7 @@ public class UserInfoController {
 
     private final IUserInfoService userInfoService;
     private final ICatService catService;
+    private final FinInfoMapper finInfoMapper;
 
     /**
      * 회원가입 화면으로 이동
@@ -1043,10 +1045,22 @@ public class UserInfoController {
                             UserInfoDTO.builder().userId(UserId).build())
                     .orElseGet(UserInfoDTO::new);
 
+
+
+
+
+
+
+
+
+
             int result = userInfoService.deleteUserById(pDTO);
+
             log.info("result : {}", result);
 
             if (result == 1) {
+
+                finInfoMapper.deleteTrnsByUserId(UserId);
                 session.invalidate();
 
                 samTitle = "회원 탈퇴 성공";

@@ -32,8 +32,9 @@
         SET
             TOT_INC = TOT_INC - CASE WHEN #{catType} = '수입' THEN #{monTrnsDetailDTO.totNm} ELSE 0 END,
             TOT_EXP = TOT_EXP - CASE WHEN #{catType} = '지출' THEN #{monTrnsDetailDTO.totNm} ELSE 0 END,
-            MON_BNK_UP = MON_BNK_UP - CASE WHEN #{catType} = '수입' THEN #{monTrnsDetailDTO.totNm}
-                                           ELSE -#{monTrnsDetailDTO.totNm} END,
+            MON_BNK_UP = MON_BNK_UP + CASE WHEN #{catType} = '지출' THEN #{monTrnsDetailDTO.totNm} * 1
+                                           WHEN #{catType} = '수입' THEN #{monTrnsDetailDTO.totNm} * -1
+                                           ELSE 0 END,
             CHG_ID = #{userId},
             CHG_DT = NOW()
         WHERE USER_ID = #{userId} AND YR_MON = #{yrMon}
@@ -73,6 +74,7 @@
                 FROM MON_CAT_SUM
                 WHERE USER_ID = #{userId} AND YR_MON = #{yrMon} AND CAT_TYPE = #{catType}
                 GROUP BY USER_ID, YR_MON, CAT_TYPE
+                HAVING total != 0
             ) total_sum
             ON t.USER_ID = total_sum.USER_ID
                 AND t.YR_MON = total_sum.YR_MON
@@ -140,5 +142,23 @@
           AND CAT_TYPE = #{catType}
           AND YR_MON = #{yrMon}
     </select>
+
+    <delete id="deleteZeroSum">
+        DELETE FROM MON_SUM
+        WHERE USER_ID = #{userId}
+          AND YR_MON = #{yrMon}
+          AND TOT_INC = 0
+          AND TOT_EXP = 0
+    </delete>
+
+    <delete id="deleteZeroCatSum">
+        DELETE FROM MON_CAT_SUM
+        WHERE USER_ID = #{userId}
+          AND YR_MON = #{yrMon}
+          AND CAT_TYPE = #{catType}
+          AND CAT_NM = #{monTrnsDetailDTO.catNm}
+          AND CAT_NUM = 0
+    </delete>
+
 
 </mapper>

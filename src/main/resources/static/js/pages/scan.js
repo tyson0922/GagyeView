@@ -3,6 +3,7 @@
     let fabricCanvas;
     let uploadedImage;
     let cropRect;
+    let croppedBase64 = null;
 
     $(document).ready(function () {
         // ✅ 이미지 업로드 및 Fabric에 표시
@@ -88,8 +89,7 @@
                 return;
             }
 
-            const dataURL = uploadedImage.toDataURL();
-            const base64 = dataURL.replace(/^data:image\/(png|jpeg);base64,/, '');
+            const base64 = croppedBase64 || uploadedImage.toDataURL().replace(/^data:image\/(png|jpeg);base64,/, '');
 
             showPresetToast('info', '처리 중', 'Google Vision API 호출 중...');
 
@@ -128,10 +128,23 @@
             console.log("🧪 상태 값:", saveJson.status, typeof saveJson.status);
 
             if (saveJson.httpStatus?.toUpperCase() === 'OK') {
+                const parsed = saveJson.data?.parsedResult;
+
+                // 🎯 사용자 친화적 포맷
+                    const formattedHtml = `
+                        <div style="text-align:center; font-size:16px;">
+                            <b>카테고리 종류:</b> ${parsed.catType}<br>
+                            <b>카테고리 이름:</b> ${parsed.catNm}<br>
+                            <b>거래 일자:</b> ${parsed.trnsDt}<br>
+                            <b>거래 금액:</b> ${parsed.trnsAmt.toLocaleString()}원<br>
+                            <b>메모:</b> ${parsed.memo}
+                        </div>
+                    `;
+
                 Swal.fire({
                     icon: 'success',
                     title: '저장 완료',
-                    html: `<b>GPT 분석 및 저장 성공</b><br><br><pre>${text}</pre>`,
+                    html: `<b>GPT 분석 및 저장 성공</b><br><br>${formattedHtml}`,
                     confirmButtonText: '확인'
                 });
             } else {
@@ -197,25 +210,81 @@
                 }
             });
         });
+
+        // 사용자 정의 파일 선택 버튼 동작
+        $('#customFileButton').on('click', function () {
+            $('#receiptImage').click();
+        });
+
+// 파일 선택 시 파일 이름 표시
+        $('#receiptImage').on('change', function () {
+            const fileName = this.files.length > 0 ? this.files[0].name : '선택된 파일 없음';
+            $('#fileNameDisplay').text(fileName);
+        });
+
+        // ✅ Show crop buttons only when editing scan area
+        $('#editScanAreaBtn').on('click', function () {
+            $('#cropActionButtons').show();
+        });
+
+// ✅ Clear file + canvas + preview
+        $('#resetUploadBtn').on('click', function () {
+            // Clear file input
+            $('#receiptImage').val('');
+            $('#fileNameDisplay').text('선택된 파일 없음');
+
+            // Hide preview section
+            $('#uploadedReceiptPreview').hide();
+            $('#cropActionButtons').hide();
+
+            // Clear canvas
+            if (fabricCanvas) {
+                fabricCanvas.clear();
+                fabricCanvas.dispose();
+                fabricCanvas = null;
+            }
+
+            uploadedImage = null;
+            cropRect = null;
+            croppedBase64 = null;
+        });
     });
 
     function applyCrop() {
         const rect = cropRect.getBoundingRect();
+
         const canvasEl = document.createElement('canvas');
         canvasEl.width = rect.width;
         canvasEl.height = rect.height;
         const ctx = canvasEl.getContext('2d');
 
-        const tempCanvas = new fabric.StaticCanvas(canvasEl);
-        const croppedImage = uploadedImage.toDataURL({
-            left: rect.left,
-            top: rect.top,
-            width: rect.width,
-            height: rect.height
-        });
+        const img = new Image();
+        img.onload = function () {
+            ctx.drawImage(
+                img,
+                rect.left / uploadedImage.scaleX,
+                rect.top / uploadedImage.scaleY,
+                rect.width / uploadedImage.scaleX,
+                rect.height / uploadedImage.scaleY,
+                0,
+                0,
+                rect.width,
+                rect.height
+            );
 
-        fabric.Image.fromURL(croppedImage, function (img) {
+            const croppedDataURL = canvasEl.toDataURL('image/jpeg');
+            croppedBase64 = croppedDataURL.replace(/^data:image\/(png|jpeg);base64,/, '');
+
+            // 🎯 Optional: show cropped preview visually
             fabricCanvas.clear();
-            fabricCanvas.setBackgroundImage(img, fabricCanvas.renderAll.bind(fabricCanvas));
-        });
+            fabric.Image.fromURL(croppedDataURL, function (croppedImg) {
+                croppedImg.selectable = false;
+                fabricCanvas.setWidth(croppedImg.width);
+                fabricCanvas.setHeight(croppedImg.height);
+                fabricCanvas.setBackgroundImage(croppedImg, fabricCanvas.renderAll.bind(fabricCanvas));
+            });
+        };
+
+        img.src = uploadedImage.getSrc(); // this is the original uploaded image source
     }
+

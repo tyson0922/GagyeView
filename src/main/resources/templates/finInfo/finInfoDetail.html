@@ -2,6 +2,11 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <!-- favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/favicon/site.webmanifest">
     <!--====== Bootstrap CSS ======-->
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.min.css"/>
     <!--====== Lineicons CSS as we are using this for icons ======-->
@@ -44,6 +49,14 @@
 
     <script type="text/javascript" src="/js/jquery/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="/js/jquery/jquery.serializeObject.min.js"></script>
+
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Korean locale -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+
     <script type="text/javascript" src="/js/pages/finInfoDetail.js"></script>
 
     <title>금융 내역</title>
@@ -159,11 +172,12 @@
                             <!-- 날짜 필터 영역 -->
                             <form method="get" action="/finInfo/detail" class="d-flex justify-content-center align-items-center gap-3 mb-3">
                                 <label class="mb-0">시작일:</label>
-                                <input type="date" name="startDate" class="form-control form-control-sm"
+                                <input type="text" id="startDate" name="startDate" class="form-control form-control-sm"
                                        style="max-width: 180px;" th:value="${startDate}" />
 
+
                                 <label class="mb-0">종료일:</label>
-                                <input type="date" name="endDate" class="form-control form-control-sm"
+                                <input type="text" id="endDate" name="endDate" class="form-control form-control-sm"
                                        style="max-width: 180px;" th:value="${endDate}" />
 
                                 <button type="submit" class="btn btn-sm caution-btn">조회</button>
@@ -271,7 +285,15 @@
 </section>
 <!--====== MainSection PART End ======-->
 <script>
+    flatpickr("#startDate", {
+        dateFormat: "Y-m-d", // 이게 중요함! "yyyy-MM-dd" 포맷과 동일
+        locale: "ko"
+    });
 
+    flatpickr("#endDate", {
+        dateFormat: "Y-m-d",
+        locale: "ko"
+    });
 </script>
 
 </body>
