@@ -23,10 +23,11 @@ spring:
 
     # === ElastiCache (Redis/Valkey) ===
     redis:
-      host: gagyeview-valkey-dev-mu2zds.serverless.apn2.cache.amazonaws.com
+      host: 3.34.221.114
       port: 6379
-      ssl:
-        enabled: true             # TLS on serverless Valkey
+      password: 1234
+
+
 
   cache:
     redis:
@@ -36,7 +37,7 @@ spring:
     redis:
       namespace: "prod:session"
 
-  config:
-    import: file:/spring_module/GagyeView/credentials/api-keys.properties
+#  config:
+#    import: file:/spring_module/GagyeView/credentials/api-keys.properties
 
 GOOGLE_APPLICATION_CREDENTIALS: /spring_module/GagyeView/credentials/CloudVisionAPIJsonKey.json

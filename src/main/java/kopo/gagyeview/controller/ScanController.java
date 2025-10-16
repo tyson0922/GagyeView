@@ -47,6 +47,7 @@ public class ScanController {
 
         String base64Image = pDTO.getImage();
         String extractedText = scanService.callGoogleVisionAPI(base64Image);
+        log.info("📤 Vision OCR 결과: {}", extractedText); // Log the result
 
         return ResponseEntity.ok(
                 CommonResponse.of(HttpStatus.OK, "텍스트 추출 성공", extractedText)

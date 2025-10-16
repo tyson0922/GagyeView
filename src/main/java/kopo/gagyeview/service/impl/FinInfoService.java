@@ -9,6 +9,7 @@ import kopo.gagyeview.service.ICatService;
 import kopo.gagyeview.service.IFinInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,9 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
     private final ISumMapper sumMapper;
     private final MongoTemplate mongodb;
     private final ChatGptFeignClient chatGptFeignClient;
+
+    @Value("${openai.api-key}")
+    private String openaiApiKey;
 
     // 사용할 컬렉션 이름
     private static final String colNm = "MON_TRNS";
@@ -87,7 +91,7 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
      * @throws Exception 예외 발생 시
      */
     @Override
-    public List<MonTrnsDTO> getTrnsByUserAndMon(String userId, String yrMon) throws Exception {
+    public List<MonTrnsDTO> getTrnsByUserAndMon(String userId, String yrMon) {
         log.info("{}.getTrnsByUserAndMon Start!", this.getClass().getName());
 
         List<MonTrnsDTO> res = finInfoMapper.getTrnsByUserAndMon(userId, yrMon);
@@ -104,7 +108,7 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
      * @throws Exception 예외 발생 시
      */
     @Override
-    public int deleteTrnsById(String id) throws Exception {
+    public int deleteTrnsById(String id) {
         log.info("{}.deleteTrnsById Start!", this.getClass().getName());
 
         MonTrnsDTO oldDTO = finInfoMapper.getTrnsById(id);
@@ -137,7 +141,7 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
 
 
     @Override
-    public int updateTrns(MonTrnsDTO pDTO) throws Exception {
+    public int updateTrns(MonTrnsDTO pDTO) {
         log.info("{}.updateTrns Start!", this.getClass().getName());
 
         // Step 1: Get old transaction by ID
@@ -199,7 +203,7 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
     }
 
     @Override
-    public List<DonutChartDTO> getDonutByCatType(String userId, String catType, String yrMon) throws Exception {
+    public List<DonutChartDTO> getDonutByCatType(String userId, String catType, String yrMon) {
         log.info("🎯 [SERVICE] getDonutByCatType() 시작 - userId: {}, catType: {}, yrMon: {}", userId, catType, yrMon);
 
         List<DonutChartDTO> rList = sumMapper.getDonutByCatType(userId, catType, yrMon);
@@ -217,7 +221,7 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
     }
 
     @Override
-    public List<BarChartDTO> getMonthlyIncomeExpense(String userId) throws Exception {
+    public List<BarChartDTO> getMonthlyIncomeExpense(String userId) {
         log.info("🎯 [SERVICE] getMonthlyIncomeExpense() 시작 - userId: {}", userId);
 
         List<BarChartDTO> rList = sumMapper.getMonthlyIncomeExpense(userId);
@@ -227,19 +231,19 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
     }
 
     @Override
-    public List<StackBarDTO> getMonthlyStack(String userId, String catType) throws Exception {
+    public List<StackBarDTO> getMonthlyStack(String userId, String catType) {
         log.info("getMonthlyStack - userId: {}, catType: {}", userId, catType);
         return sumMapper.getMonthlyStack(userId, catType);
     }
 
     @Override
-    public BigDecimal getTotalAmountByType(String userId, String catType) throws Exception {
+    public BigDecimal getTotalAmountByType(String userId, String catType) {
         log.info("getTotalAmountByType - userId: {}, catType: {}", userId, catType);
         return sumMapper.getTotalAmountByType(userId, catType);
     }
 
     @Override
-    public BigDecimal getMonthlyTotal(String userId, String catType, String yrMon) throws Exception {
+    public BigDecimal getMonthlyTotal(String userId, String catType, String yrMon) {
         log.info("getMonthlyTotal - userId: {}, catType: {}, yrMon: {}", userId, catType, yrMon);
         return sumMapper.getMonthlyTotal(userId, catType, yrMon);
     }
@@ -252,31 +256,104 @@ public class FinInfoService extends AbstractMongoDBCommon implements IFinInfoSer
     public String getAiSpendingSummary(String userId) {
         // 1. 사용자 월별 요약 데이터 준비
         List<BarChartDTO> summaryList = sumMapper.getMonthlyIncomeExpense(userId);
+        if (summaryList == null || summaryList.isEmpty()) {
+            log.warn("sumMapper.getMonthlyIncomeExpense returned no data for userId={}", userId);
+        } else {
+            log.info("sumMapper.getMonthlyIncomeExpense returned {} items for userId={}", summaryList.size(), userId);
+            for (BarChartDTO dto : summaryList) {
+                log.info("MonthlyIncomeExpense: month={}, income={}, expense={}", dto.getMonth(), dto.getIncome(), dto.getExpense());
+            }
+        }
         StringBuilder promptBuilder = new StringBuilder();
         promptBuilder.append("아래는 사용자의 월별 수입/지출 요약입니다. 소비 습관을 분석해 한글로 요약해 주세요.\n");
         for (BarChartDTO dto : summaryList) {
             promptBuilder.append(String.format("%s월: 수입=%.0f, 지출=%.0f\n", dto.getMonth(), dto.getIncome(), dto.getExpense()));
         }
-        String prompt = promptBuilder.toString();
+        String userPrompt = promptBuilder.toString();
 
-        // 2. ChatGPT API 요청 DTO 생성
+        // 2. 더 명확한 시스템 프롬프트와 예시 추가
+        String systemPrompt = "You are a financial assistant. Summarize the user's monthly income and spending habits in Korean.\n" +
+                "Example:\nInput:\n2025-04월: 수입=75349, 지출=24309\n2025-05월: 수입=81136, 지출=32463\n2025-06월: 수입=78946, 지출=33324\n\nOutput:\n사용자는 4월~6월 동안 꾸준히 수입이 발생했으며, 지출은 수입에 비해 적은 편입니다. 5월에 지출이 다소 증가했으나 전체적으로 건전한 소비 습관을 보입니다.";
+
+        // 3. 메시지 배열 구성
+        ChatGptRequestDTO.Message systemMessage = ChatGptRequestDTO.Message.builder()
+            .role("system")
+            .content(systemPrompt)
+            .build();
+        ChatGptRequestDTO.Message userMessage = ChatGptRequestDTO.Message.builder()
+            .role("user")
+            .content(userPrompt)
+            .build();
+        List<ChatGptRequestDTO.Message> messages = List.of(systemMessage, userMessage);
+        log.info("AI system prompt: {}", systemPrompt);
+        log.info("AI user prompt: {}", userPrompt);
+        log.info("AI messages: {}", messages);
+
+        // 4. 모델명 최신화 (gpt-4o 권장)
         ChatGptRequestDTO requestDTO = ChatGptRequestDTO.builder()
-                .prompt(prompt)
-                .maxTokens(300)
-                .model("text-davinci-003")
-                .build();
+            .model("gpt-4o")
+            .messages(messages)
+            .max_completion_tokens(300)
+            .build();
 
-        // 3. OpenAI API 키 (환경변수 또는 설정에서 가져오기)
-        String apiKey = System.getenv("OPENAI_API_KEY");
-        if (apiKey == null) throw new IllegalStateException("OPENAI_API_KEY 환경변수가 필요합니다.");
+        // 5. OpenAI API 키
+        String apiKey = openaiApiKey;
+        if (apiKey == null || apiKey.isBlank()) throw new IllegalStateException("openai.api-key property가 필요합니다.");
         String authorization = "Bearer " + apiKey;
 
-        // 4. Feign 클라이언트 호출
+        // 6. Feign 클라이언트 호출
         ChatGptResponseDTO response = chatGptFeignClient.getSummary(authorization, requestDTO);
-        if (response != null && response.getChoices() != null && !response.getChoices().isEmpty()) {
-            return response.getChoices().get(0).getText();
+        log.info("AI raw response: {}", abbreviate(String.valueOf(response), 1000));
+        String summary = null;
+        summary = extractContentSafely(response);
+        log.info("AI summary raw: {}", abbreviate(summary, 800));
+        // 마크다운 펜스 제거
+        summary = stripFences(summary);
+        if (summary == null || summary.isBlank()) {
+            log.warn("AI 요약 결과를 가져올 수 없습니다. (response or message is null/blank)");
+            return "AI 요약 결과를 가져올 수 없습니다.";
         }
-        return "AI 요약 결과를 가져올 수 없습니다.";
+        log.info("AI summary cleaned: {}", abbreviate(summary, 800));
+        return summary;
+    }
+
+    /**
+     * Safely extract content from OpenAI response (robust to future changes)
+     */
+    private static String extractContentSafely(ChatGptResponseDTO response) {
+        if (response == null) return null;
+        // Standard OpenAI Chat Completions
+        if (response.getChoices() != null && !response.getChoices().isEmpty()) {
+            ChatGptResponseDTO.Choice choice = response.getChoices().get(0);
+            if (choice != null && choice.getMessage() != null && choice.getMessage().getContent() != null) {
+                String s = choice.getMessage().getContent();
+                if (!s.isBlank()) return s;
+            }
+            // If other fields are added in future, handle here
+        }
+        // Ultra fallback
+        return null;
+    }
+
+    /**
+     * Remove markdown code fences from AI output
+     */
+    private static String stripFences(String content) {
+        if (content == null) return null;
+        String s = content.trim();
+        s = s.replaceAll("(?s)^```json\\s*", "");
+        s = s.replaceAll("(?s)^```\\s*", "");
+        s = s.replaceAll("\\s*```\\s*$", "");
+        return s.trim();
+    }
+
+    /**
+     * Abbreviate long strings for logging
+     */
+    private static String abbreviate(String s, int max) {
+        if (s == null) return null;
+        if (s.length() <= max) return s;
+        return s.substring(0, Math.max(0, max)) + " …(" + s.length() + " chars)";
     }
 
 }
